@@ -1,6 +1,11 @@
+import { createInitialState } from './state';
 import type { GameState } from './types';
 
 const SAVE_KEY = 'carthage-scout-rpg:tutorial-save';
+
+function normalizeLoadedState(rawState: Partial<GameState>): GameState {
+  return { ...createInitialState(), ...rawState } as GameState;
+}
 
 export function saveGame(state: GameState): void {
   localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -10,7 +15,7 @@ export function loadGame(): GameState | null {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as GameState;
+    return normalizeLoadedState(JSON.parse(raw) as Partial<GameState>);
   } catch {
     clearSave();
     return null;

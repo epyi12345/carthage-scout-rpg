@@ -20,5 +20,13 @@
   "hasConsumedPendant": false,
   "recordedTiles": [],
   "observedTiles": [],
-  "startLocation": "K6"
+  "startLocation": "K6",
+  "pendantTransformedInto": null,
+  "traits": [],
+  "statusEffects": [],
+  "chainStates": [],
+  "relationships": [],
+  "markedTileTags": [],
+  "scoutedTiles": [],
+  "connectedTiles": []
 }

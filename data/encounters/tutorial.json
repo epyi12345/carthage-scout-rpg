@@ -4,53 +4,204 @@
     "title": "눈 속에서 깨어남",
     "body": "눈 속이다.\n\n몸이 움직이지 않는다.\n손끝의 감각은 사라졌고,\n입가에는 얼어붙은 피가 엉겨 붙어 있다.\n\n그런데 이상하게도 춥지 않다.\n오히려 따뜻하다.\n\n이대로 눈을 감으면,\n아주 편해질 것 같다.",
     "choices": [
-      { "id": "rise", "text": "몸을 일으키려 애쓴다", "effects": { "hp": -3, "bodyTemp": -2, "sanity": -2, "addFlags": ["chose_to_live"], "nextEncounterId": "ENC_TUT_002_BODY_CHECK" } },
-      { "id": "sleep", "text": "눈을 감고 잠에 든다", "effects": { "isDead": true, "deathReason": "당신은 눈 속의 따뜻함에 몸을 맡겼다." } }
-    ]
+      {
+        "id": "rise",
+        "text": "몸을 일으키려 애쓴다",
+        "effects": {
+          "hp": -3,
+          "bodyTemp": -2,
+          "sanity": -2,
+          "addFlags": [
+            "chose_to_live"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_002_BODY_CHECK"
+      },
+      {
+        "id": "sleep",
+        "text": "눈을 감고 잠에 든다",
+        "effects": {
+          "isDead": true,
+          "deathReason": "당신은 눈 속의 따뜻함에 몸을 맡겼다."
+        }
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   },
   {
     "id": "ENC_TUT_002_BODY_CHECK",
     "title": "움직이지 않는 몸",
     "body": "당신은 이를 악물고 팔을 움직인다.\n\n눈이 무겁게 어깨를 누르고 있다.\n왼쪽 다리는 감각이 둔하고,\n갈비뼈 아래쪽에서는 숨을 쉴 때마다 날카로운 통증이 올라온다.\n\n살아 있다.\n\n하지만 온전하지는 않다.",
     "choices": [
-      { "id": "check_body", "text": "몸 상태를 확인한다", "effects": { "sanity": -3, "addFlags": ["checked_body"], "nextEncounterId": "ENC_TUT_003_DEAD_SCOUTS" } },
-      { "id": "ignore_pain", "text": "고통을 무시하고 주변을 본다", "effects": { "hp": -2, "sanity": -5, "addFlags": ["ignored_pain"], "nextEncounterId": "ENC_TUT_003_DEAD_SCOUTS" } }
-    ]
+      {
+        "id": "check_body",
+        "text": "몸 상태를 확인한다",
+        "effects": {
+          "sanity": -3,
+          "addFlags": [
+            "checked_body"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_003_DEAD_SCOUTS"
+      },
+      {
+        "id": "ignore_pain",
+        "text": "고통을 무시하고 주변을 본다",
+        "effects": {
+          "hp": -2,
+          "sanity": -5,
+          "addFlags": [
+            "ignored_pain"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_003_DEAD_SCOUTS"
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   },
   {
     "id": "ENC_TUT_003_DEAD_SCOUTS",
     "title": "당신의 사람들",
     "body": "바람이 낮게 울고 있다.\n\n무너진 산비탈 아래,\n부러진 창과 찢어진 천 조각들이 눈 위에 박혀 있다.\n\n그리고 그 사이에,\n당신의 사람들이 있다.\n\n상인의 가방.\n약초꾼의 붉은 끈.\n용병의 부러진 칼집.\n거한이 들던 금속 고리.\n\n아무도 움직이지 않는다.",
     "choices": [
-      { "id": "look_all", "text": "주변을 끝까지 살핀다", "effects": { "sanity": -10, "addFlags": ["saw_dead_scouts"], "nextEncounterId": "ENC_TUT_004_KEEPSAKES" } },
-      { "id": "look_away", "text": "시선을 돌린다", "effects": { "sanity": -4, "addFlags": ["looked_away_from_dead"], "nextEncounterId": "ENC_TUT_004_KEEPSAKES" } }
-    ]
+      {
+        "id": "look_all",
+        "text": "주변을 끝까지 살핀다",
+        "effects": {
+          "sanity": -10,
+          "addFlags": [
+            "saw_dead_scouts"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_004_KEEPSAKES"
+      },
+      {
+        "id": "look_away",
+        "text": "시선을 돌린다",
+        "effects": {
+          "sanity": -4,
+          "addFlags": [
+            "looked_away_from_dead"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_004_KEEPSAKES"
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   },
   {
     "id": "ENC_TUT_004_KEEPSAKES",
     "title": "유품 갈무리",
     "body": "살아남기 위해,\n당신은 죽은 이들의 것을 챙겨야 한다.\n\n그것이 약탈인지,\n수습인지,\n당신은 지금 판단할 수 없다.\n\n손끝에 얼어붙은 금속이 닿는다.\n\n눈 속에 반쯤 묻힌 작은 펜던트다.\n누군가 마지막까지 쥐고 있었던 듯,\n끈은 끊어져 있고 표면에는 피가 얼어붙어 있다.",
     "choices": [
-      { "id": "take_pendant", "text": "펜던트를 챙긴다", "effects": { "sanity": -4, "addItems": ["pendant", "wet_cloth", "charcoal_stub"], "addFlags": ["found_pendant"], "nextEncounterId": "ENC_TUT_005_MAP_RECOVERY" } },
-      { "id": "leave_pendant", "text": "펜던트만은 두고 간다", "disabledMessage": "아직은 두고 갈 수 없다.\n왜인지는 모르지만, 당신은 그것을 손에서 놓지 못한다.", "effects": {} }
-    ]
+      {
+        "id": "take_pendant",
+        "text": "펜던트를 챙긴다",
+        "effects": {
+          "sanity": -4,
+          "addItems": [
+            "pendant",
+            "wet_cloth",
+            "charcoal_stub"
+          ],
+          "addFlags": [
+            "found_pendant"
+          ]
+        },
+        "nextEncounterId": "ENC_TUT_005_MAP_RECOVERY"
+      },
+      {
+        "id": "leave_pendant",
+        "text": "펜던트만은 두고 간다",
+        "disabledMessage": "아직은 두고 갈 수 없다.\n왜인지는 모르지만, 당신은 그것을 손에서 놓지 못한다.",
+        "effects": {}
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   },
   {
     "id": "ENC_TUT_005_MAP_RECOVERY",
     "title": "찢어진 작전 지도",
     "body": "눈 밑에서 젖은 가죽통이 드러난다.\n\n당신은 얼어붙은 손가락으로 매듭을 풀고,\n안쪽에 남은 것을 꺼낸다.\n\n찢어진 작전 지도.\n부러진 숯.\n젖었지만 아직 쓸 수 있는 천 조각 몇 장.\n\n이 지도는 완전하지 않다.\n하지만 없는 것보다는 낫다.\n\n한니발은 길을 기다리고 있다.",
     "choices": [
-      { "id": "mark_start", "text": "지도를 펼쳐 현재 위치를 표시한다", "effects": { "mapTools": 2, "sanity": -2, "addItems": ["torn_operation_map"], "addFlags": ["recovered_map", "marked_start_location"], "mapUnlocked": true, "recordCurrentTile": true, "nextEncounterId": "ENC_TUT_006_FIRST_STEP" } }
-    ]
+      {
+        "id": "mark_start",
+        "text": "지도를 펼쳐 현재 위치를 표시한다",
+        "effects": {
+          "mapTools": 2,
+          "sanity": -2,
+          "addItems": [
+            "torn_operation_map"
+          ],
+          "addFlags": [
+            "recovered_map",
+            "marked_start_location"
+          ],
+          "mapUnlocked": true,
+          "recordCurrentTile": true
+        },
+        "nextEncounterId": "ENC_TUT_006_FIRST_STEP"
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   },
   {
     "id": "ENC_TUT_006_FIRST_STEP",
     "title": "첫 방향",
     "body": "당신은 남은 것들을 품 안에 밀어 넣는다.\n\n피 묻은 펜던트.\n젖은 천 조각.\n부러진 숯.\n찢어진 작전 지도.\n\n죽은 이들의 무게가,\n살아 있는 당신의 어깨에 얹힌다.\n\n이제 움직여야 한다.\n눈은 계속 내리고 있다.",
     "choices": [
-      { "id": "east_ridge", "text": "동쪽의 낮은 능선을 향한다", "effects": { "location": "J7", "slot": 1, "addFlags": ["left_avalanche_site"], "tutorialComplete": true } },
-      { "id": "north_cliff", "text": "북쪽의 절벽 아래로 향한다", "effects": { "location": "J6", "hp": -2, "bodyTemp": -2, "addFlags": ["left_avalanche_site", "chose_dangerous_first_route"], "tutorialComplete": true } },
-      { "id": "west_forest", "text": "서쪽의 검은 숲으로 향한다", "effects": { "location": "J5", "sanity": -2, "addFlags": ["left_avalanche_site", "chose_forest_first_route"], "tutorialComplete": true } }
-    ]
+      {
+        "id": "east_ridge",
+        "text": "동쪽의 낮은 능선을 향한다",
+        "effects": {
+          "location": "J7",
+          "slot": 1,
+          "addFlags": [
+            "left_avalanche_site"
+          ],
+          "tutorialComplete": true
+        }
+      },
+      {
+        "id": "north_cliff",
+        "text": "북쪽의 절벽 아래로 향한다",
+        "effects": {
+          "location": "J6",
+          "hp": -2,
+          "bodyTemp": -2,
+          "addFlags": [
+            "left_avalanche_site",
+            "chose_dangerous_first_route"
+          ],
+          "tutorialComplete": true
+        }
+      },
+      {
+        "id": "west_forest",
+        "text": "서쪽의 검은 숲으로 향한다",
+        "effects": {
+          "location": "J5",
+          "sanity": -2,
+          "addFlags": [
+            "left_avalanche_site",
+            "chose_forest_first_route"
+          ],
+          "tutorialComplete": true
+        }
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "harsh"
   }
 ]

@@ -27,5 +27,13 @@
     "type": "map",
     "description": "한니발에게 전달해야 할 작전 지도의 잔해.",
     "isConsumable": false
+  },
+  {
+    "id": "black_water_pendant",
+    "name": "검은 물의 펜던트",
+    "type": "mystic_keepsake",
+    "description": "검은 샘에 닿아 변한 펜던트. 한 번에 한해 치명적인 정신력 붕괴를 막아줄지도 모른다.",
+    "isConsumable": true,
+    "isMystic": true
   }
 ]
