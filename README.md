@@ -1,39 +1,92 @@
-# Carthage Scout RPG
+# Carthage Scout RPG Tutorial Prototype
 
-A hardcore text-based survival RPG about a Carthaginian scout captain mapping a route through the Alps for Hannibal's campaign.
+한니발의 알프스 횡단 작전을 위해 파견된 카르타고 정찰대장이 되어, 눈사태 이후 홀로 살아남고, 한니발군이 통과할 수 있는 산악 지도를 완성해 복귀해야 하는 텍스트 기반 생존 탐험 RPG의 모바일 웹 튜토리얼 프로토타입입니다.
 
-## Core Concept
+핵심 메시지:
 
-The player is not simply trying to survive.
+> 내가 지나갈 수 있는 길이 아니라, 군대가 살아남을 수 있는 길을 그려라.
 
-The player must find, verify, record, and return with a route that Hannibal's army can actually use.
+## 실행 방법
 
-A scout can pass through many places alone.  
-An army with elephants, supplies, wounded soldiers, and baggage cannot.
+```bash
+npm install
+npm run dev
+```
 
-## Core Sentence
+프로덕션 빌드 확인:
 
-> Draw not the path you can survive, but the path an army can survive.
+```bash
+npm run build
+```
 
-## Game Identity
+## 구현된 기능
 
-Carthage Scout RPG is a text-based survival exploration RPG set during the Second Punic War.
+- 모바일 웹 튜토리얼 프로토타입
+- 타이틀 화면, 새 게임, 이어하기
+- 선택지 기반 인카운터
+- 체력/정신력/체온/식량/지도도구 상태 표시
+- 튜토리얼 사망 선택지와 사망 화면
+- 동료 시신 확인에 따른 정신력 감소
+- 유품 갈무리
+- 펜던트 확정 획득
+- 펜던트 보유/소모 상태 표시 기반
+- 찢어진 작전 지도 획득
+- 지도 탭 잠금/해금
+- 현재 위치, 시작 지점, 기록된 타일, 미확인 타일이 표시되는 5x5 미니맵
+- 인벤토리 탭
+- 튜토리얼 완료 화면
+- 선택지 진행 시 localStorage 자동 저장
+- 개발자 테스트 패널
 
-The player is a Carthaginian scout captain sent by Hannibal to find a viable route through the Alps. After an avalanche destroys the scout party, the player wakes up alone and must survive, map the route, mark the way back, and return to Hannibal before the campaign collapses.
+## 구조
 
-## Key Systems
+```text
+carthage-scout-rpg/
+├─ data/
+│  ├─ encounters/
+│  │  └─ tutorial.json
+│  ├─ items.json
+│  └─ initialState.json
+├─ src/
+│  ├─ game/
+│  │  ├─ types.ts
+│  │  ├─ engine.ts
+│  │  ├─ state.ts
+│  │  ├─ encounter.ts
+│  │  ├─ inventory.ts
+│  │  ├─ map.ts
+│  │  └─ save.ts
+│  ├─ components/
+│  ├─ screens/
+│  ├─ App.tsx
+│  ├─ main.tsx
+│  └─ styles.css
+└─ README.md
+```
 
-- Text-based survival exploration
-- Randomized N x N mountain map
-- High-ground observation
-- Observation vs map recording
-- Map supplies and route quality
-- Return-route marking system
-- Campsite and fire-risk decisions
-- Tribe diplomacy
-- Enemy outposts
-- Multiple endings based on map quality and return timing
+## 테스트 방법
 
-## Current Status
+1. `npm install` 후 `npm run dev`를 실행합니다.
+2. 모바일 폭(예: 360px)으로 브라우저를 열고 타이틀 화면을 확인합니다.
+3. `새 게임`을 누르면 `ENC_TUT_001_AWAKE`가 시작되는지 확인합니다.
+4. `눈을 감고 잠에 든다`를 선택해 사망 화면을 확인합니다.
+5. 다시 시작 후 생존 선택지를 따라 진행하면서 체력/정신력/체온 변화와 자동 저장을 확인합니다.
+6. 유품 갈무리에서 펜던트를 획득하고 인벤토리 탭에서 확인합니다.
+7. 작전 지도 획득 전후 지도 탭의 잠금/해금을 확인합니다.
+8. 마지막 세 방향 중 하나를 선택해 튜토리얼 완료 화면을 확인합니다.
+9. 개발자 탭에서 상태값, 펜던트 보유/소모, 사망, 튜토리얼 완료, 세이브 초기화를 조작합니다.
 
-Planning and MVP prototyping.
+## 다음 작업 후보
+
+- 고지대 관측 인카운터
+- 지도 기록/위험 표시 시스템
+- 하루 5슬롯 구조
+- 펜던트 사용 인카운터
+- 펜던트 보존 업적
+
+## 남은 TODO
+
+- 5x5 미니맵을 본편용 11x11 지도 구조로 확장
+- 관측 타일과 기록 타일의 차이를 실제 선택지 루프에 연결
+- 지도도구 소모와 경로 품질 평가 구현
+- 튜토리얼 이후 첫 생존 루프 설계
