@@ -1,0 +1,15 @@
+프로젝트 핵심 콘셉트 정리	type:gdd,priority:critical,scope:mvp	GDD v0.1	scripts/issues/01.md
+MVP 범위 확정	type:gdd,priority:critical,scope:mvp,needs:decision	GDD v0.1	scripts/issues/02.md
+지도 타일 상태 정의	type:system,priority:critical,scope:mvp	Map System v0.1	scripts/issues/03.md
+고지대 5타일 관측 시스템 설계	type:system,type:encounter,priority:critical,scope:mvp	Map System v0.1	scripts/issues/04.md
+지도 작성 비용과 기록 품질 설계	type:system,priority:high,scope:mvp	Map System v0.1	scripts/issues/05.md
+하루 행동 루프 설계	type:system,priority:critical,scope:mvp	Text Prototype v0.1	scripts/issues/06.md
+복귀와 표식 시스템 설계	type:system,priority:critical,scope:mvp	Map System v0.1	scripts/issues/07.md
+튜토리얼 눈사태 인카운터 작성	type:story,type:encounter,priority:critical,scope:mvp	Encounter System v0.1	scripts/issues/08.md
+동굴 인카운터 MVP 작성	type:encounter,priority:medium,scope:mvp	Encounter System v0.1	scripts/issues/09.md
+부족 마을 인카운터 설계	type:encounter,type:system,priority:high,scope:mvp	Encounter System v0.1	scripts/issues/10.md
+적 주둔지/포로 정찰대원 인카운터 설계	type:encounter,priority:high,scope:mvp	Encounter System v0.1	scripts/issues/11.md
+엔딩 판정 변수 정의	type:system,priority:critical,scope:mvp	Ending Simulation v0.1	scripts/issues/12.md
+MVP 엔딩 5종 작성	type:story,type:system,priority:high,scope:mvp	Ending Simulation v0.1	scripts/issues/13.md
+플레이 화면 정보 우선순위 정리	type:ui,priority:medium,scope:mvp	Text Prototype v0.1	scripts/issues/14.md
+타일 타입 데이터 테이블 작성	type:data,type:system,priority:high,scope:mvp	Map System v0.1	scripts/issues/15.md

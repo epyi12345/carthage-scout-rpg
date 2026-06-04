@@ -1,0 +1,17 @@
+[
+  {
+    "id": "cold",
+    "name": "Cold",
+    "description": "Body temperature is dropping."
+  },
+  {
+    "id": "injured",
+    "name": "Injured",
+    "description": "Movement and encounter outcomes are worsened."
+  },
+  {
+    "id": "exhausted",
+    "name": "Exhausted",
+    "description": "Morale and survival checks are at risk."
+  }
+]

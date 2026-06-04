@@ -1,0 +1,74 @@
+[
+  {
+    "id": "mountain_path",
+    "name": "일반 산길",
+    "scout_passable": true,
+    "army_passable": true,
+    "risk": 1,
+    "notes": "Baseline tile for route testing."
+  },
+  {
+    "id": "cliff",
+    "name": "절벽",
+    "scout_passable": true,
+    "army_passable": false,
+    "risk": 4,
+    "notes": "Scout can pass; army cannot pass without a detour."
+  },
+  {
+    "id": "narrow_pass",
+    "name": "좁은 길목",
+    "scout_passable": true,
+    "army_passable": "conditional",
+    "risk": 3,
+    "notes": "Potential bottleneck for elephants and baggage."
+  },
+  {
+    "id": "valley",
+    "name": "계곡",
+    "scout_passable": true,
+    "army_passable": "conditional",
+    "risk": 2,
+    "notes": "Weather and ambush risk."
+  },
+  {
+    "id": "cave",
+    "name": "동굴",
+    "scout_passable": true,
+    "army_passable": false,
+    "risk": 2,
+    "notes": "Rest, danger, or supplies."
+  },
+  {
+    "id": "tribe_village",
+    "name": "부족 마을",
+    "scout_passable": "conditional",
+    "army_passable": "conditional",
+    "risk": 3,
+    "notes": "Diplomacy, supplies, information, or danger."
+  },
+  {
+    "id": "enemy_outpost",
+    "name": "적 주둔지",
+    "scout_passable": "conditional",
+    "army_passable": false,
+    "risk": 5,
+    "notes": "Needs marking or bypass."
+  },
+  {
+    "id": "snowfield",
+    "name": "설원",
+    "scout_passable": true,
+    "army_passable": "conditional",
+    "risk": 4,
+    "notes": "Exposure and route clarity risk."
+  },
+  {
+    "id": "forest",
+    "name": "숲",
+    "scout_passable": true,
+    "army_passable": "conditional",
+    "risk": 2,
+    "notes": "Fuel, concealment, animal risk."
+  }
+]

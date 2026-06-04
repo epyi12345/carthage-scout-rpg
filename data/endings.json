@@ -1,0 +1,27 @@
+[
+  {
+    "id": "decisive_victory",
+    "name": "대승",
+    "draft": true
+  },
+  {
+    "id": "hard_won_victory",
+    "name": "고전승",
+    "draft": true
+  },
+  {
+    "id": "defeat",
+    "name": "패전",
+    "draft": true
+  },
+  {
+    "id": "catastrophe",
+    "name": "참패",
+    "draft": true
+  },
+  {
+    "id": "settlement",
+    "name": "정착",
+    "draft": true
+  }
+]
