@@ -1,0 +1,31 @@
+[
+  {
+    "id": "pendant",
+    "name": "피 묻은 펜던트",
+    "type": "keepsake",
+    "description": "눈 속에서 거둔 동료의 유품. 사용할 수도, 끝까지 지킬 수도 있다.",
+    "isConsumable": true,
+    "isAchievementItem": true
+  },
+  {
+    "id": "wet_cloth",
+    "name": "젖은 천 조각",
+    "type": "material",
+    "description": "응급처치나 표식에 사용할 수 있는 천 조각.",
+    "isConsumable": true
+  },
+  {
+    "id": "charcoal_stub",
+    "name": "부러진 숯",
+    "type": "tool",
+    "description": "지도에 표시를 남기는 데 사용할 수 있다.",
+    "isConsumable": false
+  },
+  {
+    "id": "torn_operation_map",
+    "name": "찢어진 작전 지도",
+    "type": "map",
+    "description": "한니발에게 전달해야 할 작전 지도의 잔해.",
+    "isConsumable": false
+  }
+]
