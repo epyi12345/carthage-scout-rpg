@@ -4,6 +4,7 @@ export type Passability = 'army_passable' | 'scout_only' | 'blocked';
 export type RiskBand = 'low' | 'medium' | 'high' | 'lethal';
 export type Direction = 'north' | 'south' | 'east' | 'west';
 export type GameAction = 'move' | 'observe' | 'record' | 'rest' | 'return_to_camp';
+export type GamePhase = 'exploring' | 'encounter' | 'returned' | 'dead';
 
 export type ItemType = 'keepsake' | 'material' | 'tool' | 'map' | 'mystic_keepsake';
 
@@ -120,9 +121,22 @@ export interface PlayerState {
   maxWarmth: number;
   fatigue: number;
   maxFatigue: number;
+  morale: number;
+  maxMorale: number;
+  sanity: number;
+  maxSanity: number;
+  isAlive: boolean;
+  hasReturned: boolean;
   day: number;
   position: string;
   campPosition: string;
+}
+
+
+export interface RecordTileData {
+  recordedRisk?: number;
+  note?: string;
+  markAsRoute?: boolean;
 }
 
 export interface ChainState {
@@ -159,6 +173,16 @@ export interface Ending {
 }
 
 export interface GameState {
+  runId: string;
+  seed: string;
+  currentDay: number;
+  maxDays: number;
+  playerPosition: string;
+  playerState: PlayerState;
+  inventory: string[];
+  log: string[];
+  gamePhase: GamePhase;
+
   mapSeed: string;
   mapSize: number;
   systemMap: MapTile[];
