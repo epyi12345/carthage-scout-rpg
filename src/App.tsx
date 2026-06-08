@@ -5,10 +5,13 @@ import type { GameState } from './game/types';
 import { GameScreen } from './screens/GameScreen';
 import { TitleScreen } from './screens/TitleScreen';
 
+type ThemeMode = 'dark' | 'light';
+
 export function App() {
   const [screen, setScreen] = useState<'title' | 'game'>('title');
   const [state, setState] = useState<GameState>(() => loadGame() ?? newGame());
   const [saveExists, setSaveExists] = useState(false);
+  const [theme, setTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => setSaveExists(hasSave()), [screen, state]);
 
@@ -26,6 +29,16 @@ export function App() {
     setScreen('game');
   };
 
-  if (screen === 'title') return <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} />;
-  return <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
+  const content = screen === 'title'
+    ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} />
+    : <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
+
+  return (
+    <div className={`app-root theme-${theme}`}>
+      <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        {theme === 'dark' ? 'Light' : 'Dark'}
+      </button>
+      {content}
+    </div>
+  );
 }
