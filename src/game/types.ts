@@ -1,5 +1,7 @@
 export type TileState = 'unknown' | 'observed' | 'scouted' | 'recorded' | 'route_connected';
-export type TerrainType = 'camp' | 'ridge' | 'pass' | 'forest' | 'cliff' | 'glacier' | 'ravine';
+export type TerrainType = 'ridge' | 'cliff' | 'snowfield' | 'forest' | 'cave' | 'ravine' | 'frozen_pass' | 'abandoned_camp';
+export type Passability = 'army_passable' | 'scout_only' | 'blocked';
+export type RiskBand = 'low' | 'medium' | 'high' | 'lethal';
 export type Direction = 'north' | 'south' | 'east' | 'west';
 export type GameAction = 'move' | 'observe' | 'record' | 'rest' | 'return_to_camp';
 
@@ -37,7 +39,7 @@ export type TraitId =
   | 'tribal_language'
   | 'pain_tolerance';
 
-export type TileMarkState = 'observed' | 'scouted' | 'recorded' | 'connected';
+export type TileMarkState = 'observed' | 'scouted' | 'recorded' | 'connected' | 'route_connected';
 
 export interface TraitDefinition {
   id: TraitId;
@@ -60,8 +62,29 @@ export interface Coordinate {
   y: number;
 }
 
+export interface ObservedTileHint {
+  terrainHint: string;
+  riskBand: RiskBand;
+  passabilityHint: string;
+}
+
 export interface MapTile extends Coordinate {
   id: string;
+  terrainType: TerrainType;
+  trueRiskLevel: number;
+  passability: Passability;
+  hasCriticalInfo: boolean;
+  encounterId: string | null;
+  returnCost: number;
+  returnSignal: 'safe' | 'exposed' | 'confusing' | 'dead_end';
+
+  // Runtime player-map fields are duplicated here for tooling snapshots and tests.
+  playerKnowledgeState: TileState;
+  playerRecordedRisk?: number;
+  playerNotes: string[];
+  isRouteMarked: boolean;
+
+  // Backwards-compatible aliases used by older MVP systems.
   terrain: TerrainType;
   risk: number;
   passable: boolean;
@@ -71,12 +94,22 @@ export interface MapTile extends Coordinate {
 
 export interface PlayerMapTile extends Coordinate {
   id: string;
+  playerKnowledgeState: TileState;
+  playerRecordedRisk?: number;
+  playerNotes: string[];
+  isRouteMarked: boolean;
+  observedHint?: ObservedTileHint;
+  confirmedTerrainType?: TerrainType;
+  confirmedRiskLevel?: number;
+  confirmedPassability?: Passability;
+  hasEncounterHint?: boolean;
+
+  // Backwards-compatible aliases used by existing UI/engine code.
   state: TileState;
   observedTerrain?: TerrainType;
   observedRisk?: number;
   observedPassable?: boolean;
   notes: string[];
-  hasEncounterHint?: boolean;
 }
 
 export interface PlayerState {

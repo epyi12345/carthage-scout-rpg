@@ -44,3 +44,10 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
 .dev-truth { color: #ffd27d !important; }
 .seed-field { text-align: left; }
 @media (max-width: 370px) { .two-col { grid-template-columns: 1fr; } }
+.knowledge-unknown { opacity: .68; }
+.knowledge-observed { background: #263f48 !important; }
+.knowledge-scouted { background: #294438 !important; }
+.knowledge-recorded { background: #56472d !important; }
+.knowledge-route_connected, .route-marked { background: #7d6426 !important; border-color: #ffe4a7 !important; }
+.record-panel { margin-top: .8rem; padding: .85rem; border-radius: 14px; background: rgba(217,181,108,.08); border: 1px solid rgba(217,181,108,.2); }
+.record-actions { display: grid; gap: .55rem; }

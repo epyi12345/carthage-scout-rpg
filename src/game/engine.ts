@@ -1,5 +1,5 @@
 import { evaluateEnding } from './ending';
-import { getNeighbors, getSystemTile, revealTile } from './map';
+import { getNeighbors, getSystemTile, revealTile, updatePlayerTile } from './map';
 import { clamp, createInitialState } from './state';
 import type { Direction, EncounterChoice, EncounterConditions, EncounterEffects, GameState, RelationshipScore, TileMarkState } from './types';
 
@@ -104,7 +104,7 @@ function markTile(state: GameState, tileId: string, tileState: TileMarkState): G
   if (tileState === 'observed') playerMap = revealTile({ ...state, playerMap }, resolvedTileId, 'observed');
   if (tileState === 'scouted') playerMap = revealTile({ ...state, playerMap }, resolvedTileId, 'scouted');
   if (tileState === 'recorded') playerMap = revealTile({ ...state, playerMap }, resolvedTileId, 'recorded');
-  if (tileState === 'connected') playerMap = revealTile({ ...state, playerMap }, resolvedTileId, 'route_connected');
+  if (tileState === 'connected' || tileState === 'route_connected') playerMap = revealTile({ ...state, playerMap }, resolvedTileId, 'route_connected');
   return syncLegacyFields({
     ...state,
     playerMap,
@@ -207,11 +207,42 @@ export function observeTile(state: GameState, tileId: string): GameState {
   return syncLegacyFields(next);
 }
 
+function estimatedRiskFromObservation(playerTile: NonNullable<GameState['playerMap'][number]>): number | undefined {
+  if (!playerTile.observedHint) return undefined;
+  return { low: 2, medium: 5, high: 8, lethal: 10 }[playerTile.observedHint.riskBand];
+}
+
 export function recordTile(state: GameState, tileId: string): GameState {
   const playerTile = state.playerMap.find((tile) => tile.id === tileId);
-  if (!playerTile || playerTile.state === 'unknown') return { ...state, feedbackMessage: '먼저 관측하거나 정찰한 타일만 기록할 수 있다.' };
-  const routeState = getSystemTile(state, tileId)?.passable && playerTile.observedRisk !== undefined && playerTile.observedRisk <= 5 ? 'route_connected' : 'recorded';
-  const next = advanceAction({ ...state, playerMap: revealTile(state, tileId, routeState), mapTools: Math.max(0, state.mapTools - 1) }, `${tileId} 타일을 군대용 지도에 기록했다.`);
+  if (!playerTile || playerTile.playerKnowledgeState === 'unknown') return { ...state, feedbackMessage: '먼저 관측하거나 정찰한 타일만 기록할 수 있다.' };
+
+  let playerMap = state.playerMap;
+  if (playerTile.playerKnowledgeState === 'observed') {
+    const recordedRisk = estimatedRiskFromObservation(playerTile);
+    const notes = Array.from(new Set([...playerTile.playerNotes, `관측 기록: ${playerTile.observedHint?.terrainHint ?? '불확실'}, ${playerTile.observedHint?.riskBand ?? '위험도 불명'}`]));
+    playerMap = updatePlayerTile(state, tileId, {
+      playerKnowledgeState: 'recorded',
+      state: 'recorded',
+      playerRecordedRisk: recordedRisk,
+      playerNotes: notes,
+      notes,
+    });
+  } else {
+    playerMap = revealTile(state, tileId, 'recorded');
+  }
+
+  const next = advanceAction({ ...state, playerMap, mapTools: Math.max(0, state.mapTools - 1) }, `${tileId} 타일을 군대용 지도에 기록했다.`);
+  return syncLegacyFields(next);
+}
+
+
+export function markRouteTile(state: GameState, tileId: string): GameState {
+  const playerTile = state.playerMap.find((tile) => tile.id === tileId);
+  if (!playerTile || playerTile.playerKnowledgeState !== 'recorded') return { ...state, feedbackMessage: '기록된 타일만 경로 후보로 연결할 수 있다.' };
+  const systemTile = getSystemTile(state, tileId);
+  if (playerTile.confirmedPassability === undefined) return { ...state, feedbackMessage: '관측만 기록한 타일은 아직 경로 후보로 연결할 만큼 신뢰할 수 없다.' };
+  if (systemTile?.passability === 'blocked' || playerTile.confirmedPassability === 'blocked') return { ...state, feedbackMessage: '군대 경로로 연결하기에는 길이 끊겨 있다.' };
+  const next = advanceAction({ ...state, playerMap: revealTile(state, tileId, 'route_connected') }, `${tileId} 타일을 한니발군 경로 후보로 연결했다.`);
   return syncLegacyFields(next);
 }
 

@@ -2,28 +2,33 @@ import type { Ending, GameState, PlayerMapTile } from './types';
 
 function countRecordedAccurateTiles(state: GameState): number {
   return state.playerMap.filter((playerTile) => {
-    if (playerTile.state !== 'recorded' && playerTile.state !== 'route_connected') return false;
+    if (playerTile.playerKnowledgeState !== 'recorded' && playerTile.playerKnowledgeState !== 'route_connected') return false;
     const systemTile = state.systemMap.find((tile) => tile.id === playerTile.id);
-    return Boolean(systemTile && playerTile.observedTerrain === systemTile.terrain && playerTile.observedPassable === systemTile.passable);
+    return Boolean(
+      systemTile
+      && playerTile.confirmedTerrainType === systemTile.terrainType
+      && playerTile.confirmedPassability === systemTile.passability
+      && playerTile.playerRecordedRisk === systemTile.trueRiskLevel,
+    );
   }).length;
 }
 
 function isDangerMarked(state: GameState, playerTile: PlayerMapTile): boolean {
   const systemTile = state.systemMap.find((tile) => tile.id === playerTile.id);
-  return Boolean(systemTile && systemTile.risk >= 7 && (playerTile.state === 'recorded' || playerTile.state === 'route_connected'));
+  return Boolean(systemTile && systemTile.trueRiskLevel >= 7 && (playerTile.playerKnowledgeState === 'recorded' || playerTile.playerKnowledgeState === 'route_connected'));
 }
 
 export function evaluateEnding(state: GameState): Ending {
-  const recordedTiles = state.playerMap.filter((tile) => tile.state === 'recorded' || tile.state === 'route_connected');
-  const criticalTiles = state.systemMap.filter((tile) => tile.critical);
+  const recordedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'recorded' || tile.playerKnowledgeState === 'route_connected');
+  const criticalTiles = state.systemMap.filter((tile) => tile.hasCriticalInfo);
   const missingCriticalTiles = criticalTiles.filter((tile) => {
     const playerTile = state.playerMap.find((known) => known.id === tile.id);
-    return !playerTile || (playerTile.state !== 'recorded' && playerTile.state !== 'route_connected');
+    return !playerTile || (playerTile.playerKnowledgeState !== 'recorded' && playerTile.playerKnowledgeState !== 'route_connected');
   }).length;
   const dangerousRouteMarkings = state.playerMap.filter((tile) => isDangerMarked(state, tile)).length;
   const passableRouteDiscovery = state.playerMap.filter((tile) => {
     const systemTile = state.systemMap.find((candidate) => candidate.id === tile.id);
-    return systemTile?.passable && tile.state === 'route_connected';
+    return systemTile?.passability === 'army_passable' && tile.playerKnowledgeState === 'route_connected';
   }).length;
   const mapAccuracy = recordedTiles.length ? Math.round((countRecordedAccurateTiles(state) / recordedTiles.length) * 100) : 0;
   const survival = Math.max(0, Math.round((state.player.health + state.player.warmth + (100 - state.player.fatigue)) / 3));

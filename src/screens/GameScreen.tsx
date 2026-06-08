@@ -6,7 +6,7 @@ import { InventoryView } from '../components/InventoryView';
 import { MapView } from '../components/MapView';
 import { StatusBar } from '../components/StatusBar';
 import { getEncounter } from '../game/encounter';
-import { applyChoice, movePlayer, newGame, observeTile, recordTile, rest, returnToCamp } from '../game/engine';
+import { applyChoice, markRouteTile, movePlayer, newGame, observeTile, recordTile, rest, returnToCamp } from '../game/engine';
 import { directionLabel, getNeighbors } from '../game/map';
 import { saveGame } from '../game/save';
 import type { EncounterChoice, GameState, TabId } from '../game/types';
@@ -30,7 +30,7 @@ export function GameScreen({ state, setState, onTitle }: Props) {
   const restart = () => updateState(newGame(state.mapSeed));
 
   let content = null;
-  if (activeTab === 'map') content = <MapView state={state} selectedTileId={selectedTileId} onSelectTile={setSelectedTileId} />;
+  if (activeTab === 'map') content = <MapView state={state} selectedTileId={selectedTileId} onSelectTile={setSelectedTileId} onObserveTile={(tileId) => updateState(observeTile(state, tileId))} onRecordTile={(tileId) => updateState(recordTile(state, tileId))} onMarkRouteTile={(tileId) => updateState(markRouteTile(state, tileId))} />;
   if (activeTab === 'inventory') content = <InventoryView state={state} />;
   if (activeTab === 'dev') content = <DevPanel state={state} onStateChange={updateState} />;
   if (activeTab === 'story') {
