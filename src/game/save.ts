@@ -1,10 +1,13 @@
 import { createInitialState } from './state';
 import type { GameState } from './types';
 
-const SAVE_KEY = 'carthage-scout-rpg:tutorial-save';
+const SAVE_KEY = 'carthage-scout-rpg:mvp-save';
 
 function normalizeLoadedState(rawState: Partial<GameState>): GameState {
-  return { ...createInitialState(), ...rawState } as GameState;
+  const seed = rawState.mapSeed ?? 'migrated-mvp';
+  const base = createInitialState(seed);
+  if (!rawState.systemMap || !rawState.playerMap || !rawState.player) return { ...base, flags: rawState.flags ?? base.flags, items: rawState.items ?? base.items };
+  return { ...base, ...rawState } as GameState;
 }
 
 export function saveGame(state: GameState): void {

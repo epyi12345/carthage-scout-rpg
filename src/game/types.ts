@@ -1,3 +1,8 @@
+export type TileState = 'unknown' | 'observed' | 'scouted' | 'recorded' | 'route_connected';
+export type TerrainType = 'camp' | 'ridge' | 'pass' | 'forest' | 'cliff' | 'glacier' | 'ravine';
+export type Direction = 'north' | 'south' | 'east' | 'west';
+export type GameAction = 'move' | 'observe' | 'record' | 'rest' | 'return_to_camp';
+
 export type ItemType = 'keepsake' | 'material' | 'tool' | 'map' | 'mystic_keepsake';
 
 export type EncounterCategory =
@@ -21,7 +26,6 @@ export type EncounterCategory =
   | 'growth';
 
 export type EncounterOccurrenceType = 'fixed' | 'location_based' | 'conditional' | 'random' | 'chain' | 'revisit';
-
 export type EncounterTone = 'realistic' | 'mysterious' | 'horror' | 'hopeful' | 'harsh';
 
 export type TraitId =
@@ -51,6 +55,43 @@ export interface Item {
   isMystic?: boolean;
 }
 
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
+export interface MapTile extends Coordinate {
+  id: string;
+  terrain: TerrainType;
+  risk: number;
+  passable: boolean;
+  critical: boolean;
+  encounterIds: string[];
+}
+
+export interface PlayerMapTile extends Coordinate {
+  id: string;
+  state: TileState;
+  observedTerrain?: TerrainType;
+  observedRisk?: number;
+  observedPassable?: boolean;
+  notes: string[];
+  hasEncounterHint?: boolean;
+}
+
+export interface PlayerState {
+  health: number;
+  maxHealth: number;
+  food: number;
+  warmth: number;
+  maxWarmth: number;
+  fatigue: number;
+  maxFatigue: number;
+  day: number;
+  position: string;
+  campPosition: string;
+}
+
 export interface ChainState {
   chainId: string;
   step: number;
@@ -66,7 +107,49 @@ export interface MarkedTileTag {
   state: TileMarkState;
 }
 
+export interface EndingScore {
+  survival: number;
+  mapAccuracy: number;
+  dangerousRouteMarkings: number;
+  passableRouteDiscovery: number;
+  missingCriticalTiles: number;
+  returnTiming: number;
+  total: number;
+}
+
+export interface Ending {
+  id: string;
+  title: string;
+  body: string;
+  score: EndingScore;
+  details: string[];
+}
+
 export interface GameState {
+  mapSeed: string;
+  mapSize: number;
+  systemMap: MapTile[];
+  playerMap: PlayerMapTile[];
+  player: PlayerState;
+  actionCount: number;
+  currentEncounterId: string | null;
+  resolvedEncounterIds: string[];
+  lastLog: string[];
+  ending: Ending | null;
+  isDead: boolean;
+  deathReason: string | null;
+  flags: string[];
+  items: string[];
+  hasConsumedPendant: boolean;
+  pendantTransformedInto?: string | null;
+  traits: TraitId[];
+  statusEffects: string[];
+  chainStates: ChainState[];
+  relationships: RelationshipScore[];
+  markedTileTags: MarkedTileTag[];
+  feedbackMessage?: string | null;
+
+  // Legacy/tutorial compatibility fields kept so old JSON saves can migrate safely.
   day: number;
   slot: number;
   hp: number;
@@ -78,26 +161,13 @@ export interface GameState {
   food: number;
   mapTools: number;
   location: string;
-  isDead: boolean;
-  deathReason: string | null;
   tutorialComplete: boolean;
   mapUnlocked: boolean;
-  currentEncounterId: string;
-  flags: string[];
-  items: string[];
-  hasConsumedPendant: boolean;
-  pendantTransformedInto?: string | null;
-  traits: TraitId[];
-  statusEffects: string[];
-  chainStates: ChainState[];
-  relationships: RelationshipScore[];
-  markedTileTags: MarkedTileTag[];
   recordedTiles: string[];
   observedTiles: string[];
   scoutedTiles: string[];
   connectedTiles: string[];
   startLocation: string;
-  feedbackMessage?: string | null;
 }
 
 export interface EncounterConditions {
@@ -137,53 +207,40 @@ export interface EndingEffect {
 }
 
 export interface EncounterEffects {
+  health?: number;
+  warmth?: number;
+  fatigue?: number;
+  food?: number;
+  day?: number;
+
   hp?: number;
   sanity?: number;
   bodyTemp?: number;
-  food?: number;
   mapTools?: number;
-  day?: number;
   slot?: number;
 
   addItems?: string[];
   removeItems?: string[];
-
   addFlags?: string[];
   removeFlags?: string[];
-
   setLocation?: string;
   location?: string;
   setMapUnlocked?: boolean;
   mapUnlocked?: boolean;
   setTutorialComplete?: boolean;
   tutorialComplete?: boolean;
-
   isDead?: boolean;
   deathReason?: string;
-  nextEncounterId?: string;
+  nextEncounterId?: string | null;
   recordCurrentTile?: boolean;
-
   consumePendant?: boolean;
   transformPendantInto?: string;
-
   addTrait?: TraitId;
   addStatus?: string[];
   removeStatus?: string[];
-
-  addRelationship?: {
-    target: string;
-    value: number;
-  };
-
-  markTile?: {
-    tileId: string;
-    state: TileMarkState;
-  };
-
-  addChainState?: {
-    chainId: string;
-    step: number;
-  };
+  addRelationship?: { target: string; value: number };
+  markTile?: { tileId: string; state: TileMarkState };
+  addChainState?: { chainId: string; step: number };
 }
 
 export interface EncounterChoice {
@@ -194,8 +251,10 @@ export interface EncounterChoice {
   disabledMessage?: string;
   conditions?: EncounterConditions;
   effects?: EncounterEffects;
-  nextEncounterId?: string;
+  nextEncounterId?: string | null;
 }
+
+export type Choice = EncounterChoice;
 
 export interface Encounter {
   id: string;

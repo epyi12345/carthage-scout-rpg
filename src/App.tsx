@@ -12,9 +12,9 @@ export function App() {
 
   useEffect(() => setSaveExists(hasSave()), [screen, state]);
 
-  const startNewGame = () => {
+  const startNewGame = (seed?: string) => {
     if (hasSave() && !window.confirm('기존 세이브를 덮어쓰고 새 게임을 시작할까요?')) return;
-    const fresh = newGame();
+    const fresh = newGame(seed);
     setState(fresh);
     saveGame(fresh);
     setScreen('game');

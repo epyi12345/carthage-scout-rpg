@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { allEncounters, v02SampleEncounters } from '../game/encounter';
+import { allEncounters, mvpEncounterCatalog, v02SampleEncounters } from '../game/encounter';
 import { applyEffects, patchState } from '../game/engine';
 import { clearSave } from '../game/save';
 import { traitCatalog, traitIds } from '../game/traits';
@@ -22,15 +22,18 @@ export function DevPanel({ state, onStateChange }: Props) {
   return (
     <section className="panel dev-panel">
       <h1>개발자 테스트 패널</h1>
-      <p className="muted">현재 인카운터: <strong>{state.currentEncounterId}</strong></p>
+      <p className="muted">현재 인카운터: <strong>{state.currentEncounterId ?? '없음'}</strong></p>
       <label className="field">
         특정 인카운터로 이동
-        <select value={state.currentEncounterId} onChange={(event: { target: HTMLSelectElement }) => change({ currentEncounterId: event.target.value, tutorialComplete: false, isDead: false })}>
+        <select value={state.currentEncounterId ?? ''} onChange={(event: { target: HTMLSelectElement }) => change({ currentEncounterId: event.target.value || null, tutorialComplete: false, isDead: false })}>
+          <option value="">인카운터 없음</option>
           {allEncounters.map((encounter) => <option key={encounter.id} value={encounter.id}>{encounter.id} · {encounter.category}</option>)}
         </select>
       </label>
       <div className="sample-jumps">
-        <p className="muted">샘플 인카운터 바로 이동</p>
+        <p className="muted">MVP 인카운터 바로 이동</p>
+        {mvpEncounterCatalog.map((encounter) => <button key={encounter.id} onClick={() => change({ currentEncounterId: encounter.id, tutorialComplete: false, isDead: false })}>{encounter.title}</button>)}
+        <p className="muted">v0.2 샘플 인카운터 바로 이동</p>
         {v02SampleEncounters.map((encounter) => <button key={encounter.id} onClick={() => change({ currentEncounterId: encounter.id, tutorialComplete: false, isDead: false })}>{encounter.title}</button>)}
       </div>
       <div className="dev-actions">
@@ -44,6 +47,7 @@ export function DevPanel({ state, onStateChange }: Props) {
         <button onClick={toggleBlackWaterPendant}>검은 물의 펜던트 지급/제거</button>
         <button onClick={() => change({ isDead: !state.isDead, deathReason: state.isDead ? null : '개발자 패널로 사망 상태를 켰다.' })}>사망 상태 토글</button>
         <button onClick={() => change({ tutorialComplete: !state.tutorialComplete })}>튜토리얼 완료 토글</button>
+        <button onClick={() => change({ flags: toggleValue(state.flags, 'dev_show_system_map') })}>시스템 지도 표시 토글</button>
         <button className="danger" onClick={() => { clearSave(); onStateChange(state, false); }}>세이브 초기화</button>
       </div>
       <div className="trait-grid">

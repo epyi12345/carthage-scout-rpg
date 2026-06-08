@@ -4,15 +4,15 @@ interface Props { state: GameState }
 
 export function StatusBar({ state }: Props) {
   const stats = [
-    ['체력', `${state.hp}/${state.maxHp}`],
-    ['정신력', `${state.sanity}/${state.maxSanity}`],
-    ['체온', `${state.bodyTemp}/${state.maxBodyTemp}`],
-    ['식량', state.food],
-    ['지도도구', state.mapTools],
+    ['체력', `${state.player.health}/${state.player.maxHealth}`],
+    ['식량', state.player.food],
+    ['체온', `${state.player.warmth}/${state.player.maxWarmth}`],
+    ['피로', `${state.player.fatigue}/${state.player.maxFatigue}`],
+    ['일차', state.player.day],
   ];
   return (
     <header className="status-bar">
-      <div className="status-meta">Day {state.day} · Slot {state.slot} · {state.location}</div>
+      <div className="status-meta">Seed {state.mapSeed} · 위치 {state.player.position}</div>
       <div className="status-grid">
         {stats.map(([label, value]) => <div className="stat" key={label}><span>{label}</span><strong>{value}</strong></div>)}
       </div>
