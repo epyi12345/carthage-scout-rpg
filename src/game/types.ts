@@ -26,7 +26,13 @@ export type EncounterCategory =
   | 'safe_point'
   | 'chain'
   | 'village_request'
-  | 'growth';
+  | 'growth'
+  | 'threat'
+  | 'rescue'
+  | 'supply'
+  | 'information'
+  | 'weather'
+  | 'mixed';
 
 export type EncounterOccurrenceType = 'fixed' | 'location_based' | 'conditional' | 'random' | 'chain' | 'revisit';
 export type EncounterTone = 'realistic' | 'mysterious' | 'horror' | 'hopeful' | 'harsh';
@@ -167,6 +173,7 @@ export interface EndingScore {
 export interface Ending {
   id: string;
   title: string;
+  description?: string;
   body: string;
   score: EndingScore;
   details: string[];
@@ -227,6 +234,14 @@ export interface GameState {
   startLocation: string;
 }
 
+export interface EncounterTrigger {
+  terrainTypes?: TerrainType[];
+  minRisk?: number;
+  maxRisk?: number;
+  requiresReturn?: boolean;
+  flags?: string[];
+}
+
 export interface EncounterConditions {
   requiredItems?: string[];
   forbiddenItems?: string[];
@@ -269,6 +284,13 @@ export interface EncounterEffects {
   fatigue?: number;
   food?: number;
   day?: number;
+  healthDelta?: number;
+  warmthDelta?: number;
+  fatigueDelta?: number;
+  foodDelta?: number;
+  dayDelta?: number;
+  moraleDelta?: number;
+  sanityDelta?: number;
 
   hp?: number;
   sanity?: number;
@@ -278,8 +300,12 @@ export interface EncounterEffects {
 
   addItems?: string[];
   removeItems?: string[];
+  addItem?: string;
+  removeItem?: string;
   addFlags?: string[];
   removeFlags?: string[];
+  addFlag?: string;
+  removeFlag?: string;
   setLocation?: string;
   location?: string;
   setMapUnlocked?: boolean;
@@ -296,6 +322,9 @@ export interface EncounterEffects {
   addStatus?: string[];
   removeStatus?: string[];
   addRelationship?: { target: string; value: number };
+  revealTile?: { tileId: string; state: TileState };
+  corruptMapInfo?: { tileId: string; note: string; recordedRisk?: number };
+  markRisk?: { tileId: string; risk: number; note?: string };
   markTile?: { tileId: string; state: TileMarkState };
   addChainState?: { chainId: string; step: number };
 }
@@ -308,6 +337,8 @@ export interface EncounterChoice {
   disabledMessage?: string;
   conditions?: EncounterConditions;
   effects?: EncounterEffects;
+  consequences?: EncounterEffects;
+  logMessage?: string;
   nextEncounterId?: string | null;
 }
 
@@ -320,7 +351,9 @@ export interface Encounter {
   subCategory?: string;
   occurrenceType: EncounterOccurrenceType;
   tone?: EncounterTone;
+  description?: string;
   body: string;
+  trigger?: EncounterTrigger;
   duration?: EncounterDuration;
   conditions?: EncounterConditions;
   choices: EncounterChoice[];

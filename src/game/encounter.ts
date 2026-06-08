@@ -1,4 +1,4 @@
-import mvpEncounters from '../../data/encounters/mvp.json';
+import mvpEncounters from '../data/encounters.json';
 import sampleEncounters from '../../data/encounters/samples-v0.2.json';
 import tutorialEncounterData from '../../data/encounters/tutorial.json';
 import type { Encounter } from './types';

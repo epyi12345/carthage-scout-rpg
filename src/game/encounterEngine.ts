@@ -90,6 +90,26 @@ function checkSurvival(state: GameState): GameState {
   return syncLegacyFields(next);
 }
 
+function resolveEffectTileId(state: GameState, tileId: string): string {
+  return tileId === 'current' ? state.player.position : tileId;
+}
+
+function normalizeEffects(effects: EncounterEffects = {}): EncounterEffects {
+  return {
+    ...effects,
+    health: (effects.health ?? 0) + (effects.healthDelta ?? 0),
+    warmth: (effects.warmth ?? 0) + (effects.warmthDelta ?? 0),
+    fatigue: (effects.fatigue ?? 0) + (effects.fatigueDelta ?? 0),
+    food: (effects.food ?? 0) + (effects.foodDelta ?? 0),
+    day: (effects.day ?? 0) + (effects.dayDelta ?? 0),
+    sanity: (effects.sanity ?? 0) + (effects.sanityDelta ?? effects.moraleDelta ?? 0),
+    addItems: [...(effects.addItems ?? []), ...(effects.addItem ? [effects.addItem] : [])],
+    removeItems: [...(effects.removeItems ?? []), ...(effects.removeItem ? [effects.removeItem] : [])],
+    addFlags: [...(effects.addFlags ?? []), ...(effects.addFlag ? [effects.addFlag] : [])],
+    removeFlags: [...(effects.removeFlags ?? []), ...(effects.removeFlag ? [effects.removeFlag] : [])],
+  };
+}
+
 function markTile(state: GameState, tileId: string, tileState: TileMarkState): GameState {
   const resolvedTileId = tileId === 'current' ? state.player.position : tileId;
   let playerMap = state.playerMap;
@@ -126,7 +146,8 @@ export function getConditionFailureMessage(conditions?: EncounterConditions): st
   return '아직 이 선택을 할 조건이 부족하다.';
 }
 
-export function applyEffects(state: GameState, effects: EncounterEffects = {}): GameState {
+export function applyEffects(state: GameState, rawEffects: EncounterEffects = {}): GameState {
+  const effects = normalizeEffects(rawEffects);
   let next: GameState = {
     ...state,
     feedbackMessage: null,
@@ -172,6 +193,19 @@ export function applyEffects(state: GameState, effects: EncounterEffects = {}): 
   if (effects.nextEncounterId !== undefined) next.currentEncounterId = effects.nextEncounterId;
   if (effects.recordCurrentTile) next = markTile(next, next.player.position, 'recorded');
   if (effects.markTile) next = markTile(next, effects.markTile.tileId, effects.markTile.state);
+  if (effects.revealTile) next = syncLegacyFields({ ...next, playerMap: revealTile(next, resolveEffectTileId(next, effects.revealTile.tileId), effects.revealTile.state) });
+  if (effects.markRisk) {
+    const tileId = resolveEffectTileId(next, effects.markRisk.tileId);
+    const playerTile = next.playerMap.find((tile) => tile.id === tileId);
+    const notes = Array.from(new Set([...(playerTile?.playerNotes ?? []), ...(effects.markRisk.note ? [effects.markRisk.note] : [])]));
+    next = syncLegacyFields({ ...next, playerMap: updatePlayerTile(next, tileId, { playerKnowledgeState: 'recorded', state: 'recorded', playerRecordedRisk: effects.markRisk.risk, playerNotes: notes, notes }) });
+  }
+  if (effects.corruptMapInfo) {
+    const tileId = resolveEffectTileId(next, effects.corruptMapInfo.tileId);
+    const playerTile = next.playerMap.find((tile) => tile.id === tileId);
+    const notes = Array.from(new Set([...(playerTile?.playerNotes ?? []), effects.corruptMapInfo.note]));
+    next = syncLegacyFields({ ...next, playerMap: updatePlayerTile(next, tileId, { playerKnowledgeState: 'recorded', state: 'recorded', playerRecordedRisk: effects.corruptMapInfo.recordedRisk, playerNotes: notes, notes }) });
+  }
 
   return checkSurvival(syncLegacyFields(next));
 }
@@ -179,8 +213,9 @@ export function applyEffects(state: GameState, effects: EncounterEffects = {}): 
 export function applyChoice(state: GameState, choice: EncounterChoice): GameState {
   if (choice.disabled || choice.disabledMessage || choice.disabledReason) return { ...state, feedbackMessage: choice.disabledReason ?? choice.disabledMessage ?? '아직 선택할 수 없다.' };
   if (!areConditionsMet(state, choice.conditions)) return { ...state, feedbackMessage: getConditionFailureMessage(choice.conditions) };
-  const next = applyEffects(state, { ...(choice.effects ?? {}), nextEncounterId: choice.nextEncounterId ?? choice.effects?.nextEncounterId ?? null });
-  return syncLegacyFields({ ...next, resolvedEncounterIds: state.currentEncounterId ? addUnique(next.resolvedEncounterIds, [state.currentEncounterId]) : next.resolvedEncounterIds });
+  const next = applyEffects(state, { ...(choice.effects ?? {}), ...(choice.consequences ?? {}), nextEncounterId: choice.nextEncounterId ?? choice.effects?.nextEncounterId ?? choice.consequences?.nextEncounterId ?? null });
+  const log = choice.logMessage ? appendLog(next, choice.logMessage) : next.lastLog;
+  return syncLegacyFields({ ...next, lastLog: log, log, resolvedEncounterIds: state.currentEncounterId ? addUnique(next.resolvedEncounterIds, [state.currentEncounterId]) : next.resolvedEncounterIds });
 }
 
 export function movePlayer(state: GameState, direction: Direction): GameState {

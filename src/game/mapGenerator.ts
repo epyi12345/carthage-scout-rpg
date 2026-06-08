@@ -103,10 +103,10 @@ function terrainRisk(terrainType: TerrainType, rng: () => number): number {
 }
 
 function chooseEncounter(terrainType: TerrainType, trueRiskLevel: number, passability: Passability, rng: () => number): string | null {
-  if (terrainType === 'abandoned_camp') return 'ENC_MVP_SUPPLY_CACHE';
-  if (terrainType === 'frozen_pass' && rng() < 0.45) return 'ENC_MVP_PASS_MARKER';
-  if ((trueRiskLevel >= 8 || passability === 'blocked') && rng() < 0.5) return 'ENC_MVP_AVALANCHE_SLOPE';
-  if ((terrainType === 'forest' || terrainType === 'cave') && rng() < 0.35) return 'ENC_MVP_SUPPLY_CACHE';
+  if (terrainType === 'abandoned_camp') return 'enc_abandoned_supplies_001';
+  if (terrainType === 'frozen_pass' && rng() < 0.45) return rng() < 0.5 ? 'enc_frozen_ravine_001' : 'enc_distant_smoke_001';
+  if ((trueRiskLevel >= 8 || passability === 'blocked') && rng() < 0.5) return rng() < 0.5 ? 'enc_rockfall_001' : 'enc_collapsed_path_001';
+  if ((terrainType === 'forest' || terrainType === 'cave') && rng() < 0.35) return terrainType === 'cave' ? 'enc_cave_shelter_001' : 'enc_animal_tracks_001';
   return null;
 }
 
@@ -175,7 +175,7 @@ export function generateSystemMap(seed: string, size = MVP_MAP_SIZE): MapTile[] 
       const passability = isStart || onRoute ? 'army_passable' : TERRAIN_PASSABILITY[terrainType];
       const hasCriticalInfo = y <= 1 || onRoute || trueRiskLevel >= 8 || passability === 'blocked';
       const encounterId = isStart ? null : chooseEncounter(terrainType, trueRiskLevel, passability, rng);
-      if (terrainType === 'abandoned_camp' || terrainType === 'cave' || encounterId === 'ENC_MVP_SUPPLY_CACHE') resourceCount += 1;
+      if (terrainType === 'abandoned_camp' || terrainType === 'cave' || encounterId === 'enc_abandoned_supplies_001') resourceCount += 1;
       if (trueRiskLevel >= 7 || passability === 'blocked') riskZoneCount += 1;
       tiles.push(makeTile(id, x, y, terrainType, trueRiskLevel, passability, hasCriticalInfo, encounterId));
     }
@@ -189,7 +189,7 @@ export function generateSystemMap(seed: string, size = MVP_MAP_SIZE): MapTile[] 
   if (riskZoneCount < 5) {
     for (const tile of tiles.filter((candidate) => !viableRoute.has(candidate.id)).slice(0, 5 - riskZoneCount)) {
       const index = tiles.findIndex((candidate) => candidate.id === tile.id);
-      tiles[index] = makeTile(tile.id, tile.x, tile.y, 'cliff', 10, 'blocked', true, 'ENC_MVP_AVALANCHE_SLOPE');
+      tiles[index] = makeTile(tile.id, tile.x, tile.y, 'cliff', 10, 'blocked', true, 'enc_rockfall_001');
     }
   }
 
