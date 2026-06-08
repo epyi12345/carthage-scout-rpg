@@ -1,39 +1,97 @@
-# Carthage Scout RPG
+# Carthage Scout RPG MVP Foundation
 
-A hardcore text-based survival RPG about a Carthaginian scout captain mapping a route through the Alps for Hannibal's campaign.
+카르타고 / Carthage Scout RPG는 한니발의 알프스 횡단을 위해 파견된 정찰대장이 되어, **내가 살아남을 수 있는 길이 아니라 군대가 살아남을 수 있는 길**을 기록하는 모바일 우선 텍스트 생존 탐험 RPG입니다.
 
-## Core Concept
+이번 구현은 최종 게임이 아니라 GitHub Pages에 올릴 수 있는 정적 모바일 웹 MVP 기반입니다. 백엔드, 로그인, 멀티플레이, 결제, 복잡한 전투, 제작 시스템은 포함하지 않습니다.
 
-The player is not simply trying to survive.
+## 실행 방법
 
-The player must find, verify, record, and return with a route that Hannibal's army can actually use.
+```bash
+npm install
+npm run dev
+```
 
-A scout can pass through many places alone.  
-An army with elephants, supplies, wounded soldiers, and baggage cannot.
+프로덕션 빌드:
 
-## Core Sentence
+```bash
+npm run build
+npm run preview
+```
 
-> Draw not the path you can survive, but the path an army can survive.
+## GitHub Pages 배포
 
-## Game Identity
+Vite 정적 빌드 결과물은 `dist/`에 생성됩니다.
 
-Carthage Scout RPG is a text-based survival exploration RPG set during the Second Punic War.
+1. 로컬에서 `npm run build`를 실행합니다.
+2. GitHub 저장소 설정에서 Pages source를 GitHub Actions 또는 `dist` 배포 워크플로로 지정합니다.
+3. 저장소 서브패스 배포가 필요하면 `vite.config.ts`의 `base` 값을 저장소 경로에 맞게 조정합니다. 현재 설정은 상대 경로 배포와 로컬 실행을 우선합니다.
 
-The player is a Carthaginian scout captain sent by Hannibal to find a viable route through the Alps. After an avalanche destroys the scout party, the player wakes up alone and must survive, map the route, mark the way back, and return to Hannibal before the campaign collapses.
+## 구현된 MVP 기능
 
-## Key Systems
+- React + TypeScript + Vite 모바일 웹 구조
+- localStorage 기반 저장/이어하기
+- 시드 기반 7x7 절차적 산악 지도 생성
+- 시스템 지도와 플레이어 지도 분리
+  - 시스템 지도: 실제 지형, 위험도, 통과 가능 여부, 핵심 타일, 인카운터 ID 보유
+  - 플레이어 지도: unknown / observed / scouted / recorded / route_connected 상태와 관측 정보만 보유
+- 플레이어 행동
+  - 이동
+  - 인접 타일 관측
+  - 관측/정찰 타일 기록
+  - 휴식
+  - 야영지 복귀 및 엔딩 평가
+- 생존 자원
+  - 체력
+  - 식량
+  - 체온
+  - 피로
+  - 일차
+- JSON 기반 인카운터 엔진
+- 이동 중 간단한 인카운터 발생
+- 엔딩 평가 기준
+  - 생존
+  - 지도 정확도
+  - 위험 경로 표시
+  - 통과 가능 경로 발견
+  - 누락된 핵심 타일
+  - 복귀 시점
+- 개발자 패널
+  - MVP/v0.2 인카운터 바로 이동
+  - 시스템 지도 표시 토글
+  - 플래그/체인 상태 확인
+  - 특성/아이템/상태 조작
 
-- Text-based survival exploration
-- Randomized N x N mountain map
-- High-ground observation
-- Observation vs map recording
-- Map supplies and route quality
-- Return-route marking system
-- Campsite and fire-risk decisions
-- Tribe diplomacy
-- Enemy outposts
-- Multiple endings based on map quality and return timing
+## 주요 파일
 
-## Current Status
+```text
+data/
+  encounters/mvp.json            # MVP 이동 중 발생하는 JSON 인카운터
+  encounters/samples-v0.2.json   # 확장 구조 샘플 인카운터
+  items.json                     # 아이템 플레이스홀더
+  traits.json                    # 특성 플레이스홀더
+src/game/
+  types.ts                       # GameState, MapTile, PlayerState, Encounter, Choice, Item, Ending 타입
+  map.ts                         # 시드 기반 7x7 시스템/플레이어 지도 생성 및 타일 공개
+  engine.ts                      # 이동/관측/기록/휴식/복귀/인카운터 효과 적용
+  ending.ts                      # 엔딩 평가
+  save.ts                        # localStorage 저장/로드
+src/components/
+  MapView.tsx                    # 모바일 그리드 지도
+  DevPanel.tsx                   # 테스트 패널
+src/screens/
+  GameScreen.tsx                 # 플레이 가능한 세로 슬라이스
+```
 
-Planning and MVP prototyping.
+## Encounter System v0.2 문서
+
+- [Encounter System v0.2](docs/encounter-system-v0.2.md): 확장형 인카운터 카테고리, 발생 방식, 펜던트 특수 사용, 샘플 인카운터 구조를 정리합니다.
+
+## 남은 TODO
+
+- 실제 28일 캠페인 구조
+- 복귀 경로를 한 칸씩 되짚는 시스템
+- route_connected를 경로 그래프로 검증하는 로직
+- 지도 정확도에 지형 오기록/부분 기록 반영
+- 위험 표식 UI 개선
+- 고지대 관측, 야영, 부족/로마군 인카운터 추가
+- GitHub Actions 기반 Pages 자동 배포 워크플로
