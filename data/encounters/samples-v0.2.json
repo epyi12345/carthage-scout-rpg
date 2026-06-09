@@ -1,0 +1,118 @@
+[
+  {
+    "id": "ENC_CAVE_DEEP_001",
+    "title": "깊은 동굴",
+    "category": "long_exploration",
+    "subCategory": "deep_cave",
+    "occurrenceType": "location_based",
+    "tone": "mysterious",
+    "body": "산비탈 아래,\n눈으로 반쯤 가려진 검은 틈이 보인다.\n\n바람은 그 안으로 빨려 들어가고 있다.\n동굴 입구 주변에는 오래된 발자국과\n짐승의 발톱 자국이 함께 남아 있다.\n\n안쪽은 깊다.\n아마 하루 안에 끝나지 않을 것이다.",
+    "duration": { "minSlots": 4, "maxDays": 2 },
+    "followUps": ["ENC_MYSTIC_WELL_001"],
+    "mapEffects": [{ "tileId": "current", "state": "observed", "tag": "deep_cave", "note": "깊은 동굴 입구" }],
+    "choices": [
+      {
+        "id": "enter_deep",
+        "text": "깊이 들어간다",
+        "effects": { "sanity": -5, "bodyTemp": -4, "food": -1, "day": 1, "addFlags": ["entered_deep_cave"] },
+        "nextEncounterId": "ENC_MYSTIC_WELL_001"
+      },
+      {
+        "id": "inspect_entrance",
+        "text": "입구만 조사한다",
+        "effects": { "sanity": -1, "mapTools": 1, "addFlags": ["inspected_deep_cave_entrance"], "markTile": { "tileId": "current", "state": "observed" } }
+      },
+      {
+        "id": "mark_only",
+        "text": "지도에 표시만 한다",
+        "effects": { "mapTools": -1, "addFlags": ["marked_deep_cave"], "markTile": { "tileId": "current", "state": "recorded" } }
+      },
+      {
+        "id": "ignore",
+        "text": "무시하고 이동한다",
+        "effects": { "addFlags": ["ignored_deep_cave"] }
+      }
+    ]
+  },
+  {
+    "id": "ENC_CAVE_SHALLOW_001",
+    "title": "얕은 동굴",
+    "category": "safe_point",
+    "subCategory": "shallow_cave",
+    "occurrenceType": "location_based",
+    "tone": "realistic",
+    "body": "바위 사이에 낮은 동굴이 있다.\n\n안쪽은 깊지 않다.\n짐승 냄새도, 사람의 흔적도 거의 없다.\n\n바람을 피하기에는 충분하고,\n작은 불을 피운다면 밖에서는 잘 보이지 않을 것이다.",
+    "returnEffects": [{ "id": "shallow_cave_safe_point", "description": "복귀 중 안전 거점으로 사용할 가능성이 생긴다.", "returnRisk": -1, "safePoint": true }],
+    "choices": [
+      { "id": "rest_inside", "text": "안에서 쉰다", "effects": { "hp": 8, "bodyTemp": 12, "sanity": 4, "slot": 1, "addFlags": ["rested_in_shallow_cave"] } },
+      { "id": "light_fire", "text": "작은 불을 피운다", "effects": { "bodyTemp": 18, "sanity": 2, "slot": 1, "food": -1, "addFlags": ["lit_fire_in_shallow_cave"] } },
+      { "id": "mark_entrance", "text": "입구에 표식을 남긴다", "effects": { "mapTools": -1, "addFlags": ["marked_shallow_cave"], "markTile": { "tileId": "current", "state": "recorded" } } },
+      { "id": "pass_by", "text": "그냥 지나간다", "effects": { "addFlags": ["ignored_shallow_cave"] } }
+    ]
+  },
+  {
+    "id": "ENC_CHAIN_SURVIVOR_TRACE_001",
+    "title": "생존자의 흔적",
+    "category": "chain",
+    "subCategory": "survivor_trace",
+    "occurrenceType": "chain",
+    "tone": "hopeful",
+    "body": "눈 위에 오래되지 않은 발자국이 있다.\n\n한 명이다.\n비틀거리며 걸었다.\n\n발자국은 바위 능선 너머로 이어진다.",
+    "followUps": ["ENC_CHAIN_SURVIVOR_TRACE_002_PLACEHOLDER"],
+    "choices": [
+      { "id": "follow_tracks", "text": "발자국을 따라간다", "effects": { "slot": 1, "bodyTemp": -2, "addFlags": ["following_survivor_trace"], "addChainState": { "chainId": "survivor_trace", "step": 1 } }, "nextEncounterId": "ENC_CHAIN_SURVIVOR_TRACE_002_PLACEHOLDER" },
+      { "id": "mark_tracks", "text": "지도에 표시한다", "effects": { "mapTools": -1, "addFlags": ["marked_survivor_trace"], "markTile": { "tileId": "current", "state": "observed" }, "addChainState": { "chainId": "survivor_trace", "step": 0 } } },
+      { "id": "ignore_tracks", "text": "무시한다", "effects": { "addFlags": ["ignored_survivor_trace"] } }
+    ]
+  },
+  {
+    "id": "ENC_VILLAGE_REQUEST_001",
+    "title": "잃어버린 아이",
+    "category": "village_request",
+    "subCategory": "lost_child",
+    "occurrenceType": "conditional",
+    "tone": "realistic",
+    "body": "마을의 노인은 당신을 한참 바라보다가\n눈 덮인 숲 쪽을 가리킨다.\n\n아이 하나가 돌아오지 않았다.\n\n그들은 당신에게 길을 묻는 것이 아니다.\n당신이 어떤 사람인지 보고 있다.",
+    "followUps": ["ENC_CHAIN_LOST_CHILD_001_PLACEHOLDER"],
+    "choices": [
+      { "id": "accept", "text": "아이를 찾겠다고 말한다", "effects": { "sanity": 2, "addRelationship": { "target": "mountain_village", "value": 10 }, "addFlags": ["accepted_lost_child_request"] }, "nextEncounterId": "ENC_CHAIN_LOST_CHILD_001_PLACEHOLDER" },
+      { "id": "negotiate", "text": "대가를 요구한다", "effects": { "addRelationship": { "target": "mountain_village", "value": 3 }, "food": 1, "addFlags": ["negotiated_lost_child_request"] } },
+      { "id": "refuse", "text": "거절한다", "effects": { "addRelationship": { "target": "mountain_village", "value": -8 }, "addFlags": ["refused_lost_child_request"] } },
+      { "id": "demand_roman_info", "text": "로마군 정보를 먼저 요구한다", "effects": { "addRelationship": { "target": "mountain_village", "value": -2 }, "addFlags": ["demanded_roman_info"] } }
+    ]
+  },
+  {
+    "id": "ENC_MYSTIC_WELL_001",
+    "title": "검은 샘",
+    "category": "mystic",
+    "subCategory": "deep_well",
+    "occurrenceType": "conditional",
+    "tone": "mysterious",
+    "body": "샘은 빛나지 않는다.\n그저 검은 물이 고여 있을 뿐이다.\n\n하지만 당신은 안다.\n이 물은 무언가를 요구하고 있다.\n\n손 안의 펜던트가 차갑게 식는다.",
+    "conditions": { "requiredFlags": ["entered_deep_cave"] },
+    "choices": [
+      {
+        "id": "throw_pendant",
+        "text": "펜던트를 샘에 던진다",
+        "conditions": { "requiredItems": ["pendant"] },
+        "effects": { "consumePendant": true, "transformPendantInto": "black_water_pendant", "sanity": -12, "addFlags": ["sacrificed_pendant_to_well", "received_black_water_pendant"] }
+      },
+      {
+        "id": "drink_with_pendant",
+        "text": "펜던트를 쥔 채 물을 마신다",
+        "conditions": { "requiredItems": ["pendant"] },
+        "effects": { "hp": 25, "bodyTemp": 15, "sanity": -18, "removeStatus": ["all"], "addFlags": ["drank_from_well_with_pendant"] }
+      },
+      {
+        "id": "drink_only",
+        "text": "물만 마신다",
+        "effects": { "hp": 15, "removeStatus": ["bleeding", "frostbite", "fever"], "sanity": -25, "addFlags": ["drank_from_well_without_offering"] }
+      },
+      {
+        "id": "refuse",
+        "text": "아무것도 하지 않는다",
+        "effects": { "sanity": 2, "addFlags": ["refused_mystic_well"] }
+      }
+    ]
+  }
+]
