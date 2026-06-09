@@ -163,3 +163,199 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
   .title-main-panel { margin: 0; }
 }
 .title-main-panel .secondary-action { background: rgba(69, 82, 85, .92); color: #f3ead8; box-shadow: none; border: 1px solid rgba(255,255,255,.14); }
+
+/* Main title intro sequence: clear layer under fog layer, with CSS-only fog clearing. */
+.title-intro-screen {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #05090b;
+  color: #f3ead8;
+  isolation: isolate;
+  cursor: default;
+}
+
+.title-bg-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: 68% center;
+  background-repeat: no-repeat;
+  transform: scale(1.015);
+}
+
+.title-bg-clear {
+  z-index: 0;
+  background-image: var(--title-clear-background-image), linear-gradient(135deg, #1a2529 0%, #070b0d 58%, #020303 100%);
+}
+
+.title-bg-fog {
+  z-index: 1;
+  background-image: var(--title-fog-background-image), radial-gradient(circle at 50% 38%, #dfe8e6 0%, #9fb0b2 34%, #29383d 78%);
+  opacity: .98;
+  filter: saturate(.82) brightness(1.08);
+  animation: titleFogClear 2.6s ease-in-out 300ms forwards;
+}
+
+.title-soft-white-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 48% 45%, rgba(238, 246, 244, .23), transparent 34%),
+    linear-gradient(180deg, rgba(241, 246, 244, .1) 0%, transparent 40%, rgba(0,0,0,.32) 100%);
+  animation: titleWhiteMist 2.6s ease-in-out 300ms forwards;
+}
+
+.title-bottom-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.08) 42%, rgba(0,0,0,.78) 100%),
+    linear-gradient(90deg, rgba(0,0,0,.62), transparent 46%, rgba(0,0,0,.18));
+}
+
+.title-logo-layer {
+  position: absolute;
+  z-index: 4;
+  left: clamp(1rem, 5vw, 2rem);
+  right: 1rem;
+  top: clamp(4rem, 13vh, 7rem);
+  max-width: 27rem;
+  text-shadow: 0 4px 28px rgba(0,0,0,.92);
+}
+
+.title-logo-layer h1 {
+  margin: 0 0 .7rem;
+  font-size: clamp(2.35rem, 12vw, 4rem);
+  line-height: .93;
+  letter-spacing: -.06em;
+}
+
+.title-utility-actions {
+  position: absolute;
+  z-index: 5;
+  top: max(.75rem, env(safe-area-inset-top));
+  right: .75rem;
+  display: flex;
+  gap: .5rem;
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: titleControlsIn 420ms ease forwards;
+}
+
+.title-utility-button {
+  min-height: 42px;
+  padding: .55rem .7rem;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(7, 12, 14, .58);
+  color: #f3ead8;
+  box-shadow: none;
+  backdrop-filter: blur(5px);
+  font-size: .78rem;
+}
+
+.touch-to-start {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: max(2.1rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  min-width: min(78vw, 320px);
+  border: 0;
+  background: transparent;
+  color: #f7efe0;
+  box-shadow: none;
+  text-align: center;
+  letter-spacing: .24em;
+  text-shadow: 0 3px 20px rgba(0,0,0,.95);
+  animation: touchPromptPulse 1.8s ease-in-out infinite;
+}
+
+.touch-to-start-muted {
+  opacity: .18;
+  animation: none;
+  transform: translateX(-50%) translateY(12px);
+  transition: opacity 360ms ease, transform 360ms ease;
+}
+
+.title-main-menu {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: max(1.4rem, env(safe-area-inset-bottom));
+  width: min(calc(100vw - 2rem), 430px);
+  padding: 1rem;
+  border: 1px solid rgba(217,181,108,.24);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(11,17,19,.68), rgba(5,8,9,.9));
+  box-shadow: 0 24px 90px rgba(0,0,0,.58);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transform: translateX(-50%) translateY(24px);
+  pointer-events: none;
+  transition: opacity 520ms ease, transform 520ms ease;
+}
+
+.title-main-menu-open {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.title-main-menu .field { color: #d8e3df; }
+.title-main-menu input { width: 100%; margin-top: .35rem; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; padding: .8rem .9rem; background: rgba(3,7,9,.72); color: #f3ead8; }
+.title-main-menu .title-actions button { width: 100%; }
+.title-modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.58); }
+.title-modal-panel { width: min(100%, 390px); display: grid; gap: .85rem; padding: 1.1rem; border: 1px solid rgba(217,181,108,.28); border-radius: 22px; background: rgba(12, 18, 20, .96); box-shadow: 0 24px 90px rgba(0,0,0,.62); }
+.title-modal-panel .secondary-action { background: rgba(69, 82, 85, .92); color: #f3ead8; box-shadow: none; border: 1px solid rgba(255,255,255,.14); }
+
+@keyframes titleFogClear {
+  0% { opacity: 1; transform: scale(1.025); clip-path: inset(0 0 0 0); }
+  34% { opacity: .92; }
+  74% { opacity: .28; transform: scale(1.055) translate3d(-1.5%, -1%, 0); clip-path: inset(0 0 18% 0); }
+  100% { opacity: 0; transform: scale(1.08) translate3d(-3%, -2%, 0); clip-path: inset(0 0 100% 0); visibility: hidden; }
+}
+
+@keyframes titleWhiteMist {
+  0% { opacity: .82; }
+  70% { opacity: .32; }
+  100% { opacity: .08; }
+}
+
+@keyframes titleControlsIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes touchPromptPulse {
+  0%, 100% { opacity: .72; }
+  50% { opacity: 1; }
+}
+
+@supports ((-webkit-mask-image: linear-gradient(#000, transparent)) or (mask-image: linear-gradient(#000, transparent))) {
+  .title-bg-fog {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 100%);
+    -webkit-mask-size: 100% 320%;
+    mask-size: 100% 320%;
+    -webkit-mask-position: 0 100%;
+    mask-position: 0 100%;
+    animation: titleFogMaskedClear 2.6s ease-in-out 300ms forwards;
+  }
+}
+
+@keyframes titleFogMaskedClear {
+  0% { opacity: 1; transform: scale(1.025); -webkit-mask-position: 0 100%; mask-position: 0 100%; }
+  68% { opacity: .72; }
+  100% { opacity: 0; transform: scale(1.08) translate3d(-3%, -2%, 0); -webkit-mask-position: 0 0; mask-position: 0 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-bg-fog, .title-soft-white-overlay { animation-duration: 1ms; }
+  .title-utility-actions, .title-main-menu, .touch-to-start { animation-duration: 1ms; transition-duration: 1ms; }
+}
