@@ -18,6 +18,8 @@ npm run build
 npm run preview
 ```
 
+런치 스플래시 로고는 PR 시스템의 바이너리 제한을 피하기 위해 Base64 텍스트 소스에서 생성합니다. `npm run dev`, `npm run build`, `npm run preview`는 모두 `npm run prepare-logo`를 먼저 실행해 `public/assets/logos/logo_ref_heick_games_full.png`를 자동 생성합니다.
+
 ## GitHub Pages 배포
 
 Vite 정적 빌드 결과물은 `dist/`에 생성됩니다. 이 저장소는 GitHub Pages 서브패스 배포를 위해 `vite.config.ts`의 `base` 값을 `/carthage-scout-rpg/`로 설정합니다.
