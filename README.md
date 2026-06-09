@@ -20,11 +20,23 @@ npm run preview
 
 ## GitHub Pages 배포
 
-Vite 정적 빌드 결과물은 `dist/`에 생성됩니다.
+Vite 정적 빌드 결과물은 `dist/`에 생성됩니다. 이 저장소는 GitHub Pages 서브패스 배포를 위해 `vite.config.ts`의 `base` 값을 `/carthage-scout-rpg/`로 설정합니다.
 
-1. 로컬에서 `npm run build`를 실행합니다.
-2. GitHub 저장소 설정에서 Pages source를 GitHub Actions 또는 `dist` 배포 워크플로로 지정합니다.
-3. 저장소 서브패스 배포가 필요하면 `vite.config.ts`의 `base` 값을 저장소 경로에 맞게 조정합니다. 현재 설정은 상대 경로 배포와 로컬 실행을 우선합니다.
+자동 배포는 `.github/workflows/deploy-pages.yml`에서 관리합니다. `mvp` 브랜치에 push되면 워크플로가 의존성을 설치하고, 타입 체크를 실행하고, 정적 사이트를 빌드한 뒤 `dist/`를 GitHub Pages에 배포합니다.
+
+GitHub 저장소 설정에서 필요한 항목:
+
+1. **Settings → Pages → Build and deployment → Source**를 `GitHub Actions`로 설정합니다.
+2. **Settings → Actions → General**에서 Actions 실행이 허용되어 있어야 합니다.
+3. 배포 브랜치는 워크플로 기준으로 `mvp`입니다. `mvp`에 push하거나 워크플로를 수동 실행하면 Pages 배포가 진행됩니다.
+
+로컬 확인:
+
+```bash
+npm run typecheck
+npm run build
+npm run preview
+```
 
 ## 구현된 MVP 기능
 
