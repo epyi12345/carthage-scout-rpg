@@ -18,7 +18,7 @@ npm run build
 npm run preview
 ```
 
-런치 스플래시 로고는 PR 시스템의 바이너리 제한을 피하기 위해 Base64 텍스트 소스에서 생성합니다. `npm run dev`, `npm run build`, `npm run preview`는 모두 `npm run prepare-logo`를 먼저 실행해 `public/assets/logos/logo_ref_heick_games_full.png`를 자동 생성합니다.
+런치 스플래시는 실제 저장소 자산 `public/assets/logos/logo_ref_heick_games_full.png`를 사용합니다. 메인 타이틀 인트로는 `public/assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`가 걷히며 `public/assets/backgrounds/bg_main_alpine_scout_clear.jpg`를 드러내는 구조입니다.
 
 ## GitHub Pages 배포
 

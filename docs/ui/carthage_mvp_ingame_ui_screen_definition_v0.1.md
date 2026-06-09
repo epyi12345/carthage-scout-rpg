@@ -9,10 +9,11 @@ This document defines the near-term play-facing screen structure for the mobile-
 - Let the player start a new seeded reconnaissance run or continue an existing local save.
 
 **Current implementation notes**
-- Uses `public/assets/backgrounds/bg_main_alpine_scout_snowstorm.jpg`.
-- The image must cover the viewport with `background-size: cover`.
-- Mobile portrait positioning uses `background-position: 70% center` to keep the scout silhouette near the lower-right composition area.
-- A dark overlay keeps the title, seed input, and buttons readable.
+- The current title intro is defined in `docs/ui/carthage_mvp_main_title_intro_screen_definition_v0.1.md`.
+- It uses `public/assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg` over `public/assets/backgrounds/bg_main_alpine_scout_clear.jpg`.
+- Both images cover the viewport with `background-size: cover`.
+- Mobile portrait positioning uses approximately `background-position: 68% center` to keep the scout silhouette near the lower-right/right-center composition area.
+- A dark bottom overlay keeps the touch prompt and buttons readable.
 
 **Required UI**
 - Game title.

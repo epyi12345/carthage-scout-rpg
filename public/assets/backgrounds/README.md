@@ -1,11 +1,13 @@
 # Background assets
 
-Place the main title background here before release:
+The main title intro uses these exact designer-provided files:
 
-`bg_main_alpine_scout_snowstorm.jpg`
+- `public/assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`
+- `public/assets/backgrounds/bg_main_alpine_scout_clear.jpg`
 
-The title screen references it with:
+Runtime paths used by the app:
 
-`${import.meta.env.BASE_URL}assets/backgrounds/bg_main_alpine_scout_snowstorm.jpg`
+- `${import.meta.env.BASE_URL}assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`
+- `${import.meta.env.BASE_URL}assets/backgrounds/bg_main_alpine_scout_clear.jpg`
 
-If the JPG is missing during development, the CSS fallback gradient still keeps the title screen readable.
+The clear image is rendered underneath the fog image. The fog image clears away with lightweight CSS to reveal the clear image.

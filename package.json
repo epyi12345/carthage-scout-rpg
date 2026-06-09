@@ -4,11 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run prepare-logo && vite",
-    "build": "npm run prepare-logo && tsc -b && vite build",
-    "preview": "npm run prepare-logo && vite preview",
-    "typecheck": "tsc -b",
-    "prepare-logo": "node scripts/prepare-logo.mjs"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "vite": "latest",

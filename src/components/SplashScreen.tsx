@@ -10,8 +10,6 @@ const LOGO_SRC = `${import.meta.env.BASE_URL}assets/logos/logo_ref_heick_games_f
 
 export function SplashScreen({ onComplete }: Props) {
   const [phase, setPhase] = useState<SplashPhase>('entering');
-  const [logoFailed, setLogoFailed] = useState(false);
-
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const fadeInMs = prefersReducedMotion ? 0 : 500;
@@ -32,8 +30,7 @@ export function SplashScreen({ onComplete }: Props) {
   return (
     <div className={`splash-screen splash-${phase}`} role="status" aria-live="polite" aria-label="Heick Games loading">
       <div className="splash-mark">
-        {!logoFailed && <img src={LOGO_SRC} alt="Heick Games logo" onError={() => setLogoFailed(true)} />}
-        {logoFailed && <span className="splash-placeholder">Heick Games</span>}
+        <img src={LOGO_SRC} alt="Heick Games logo" />
       </div>
     </div>
   );

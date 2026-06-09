@@ -82,7 +82,6 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
 .splash-mark { width: min(72vw, 280px); display: grid; place-items: center; opacity: 0; transform: translateY(8px); transition: opacity 500ms ease, transform 500ms ease; }
 .splash-visible .splash-mark, .splash-leaving .splash-mark { opacity: 1; transform: translateY(0); }
 .splash-mark img { display: block; width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 18px 44px rgba(0,0,0,.55)); }
-.splash-placeholder { display: grid; place-items: center; width: min(72vw, 280px); min-height: 112px; border: 1px solid rgba(217,181,108,.34); border-radius: 22px; color: #ffe4a7; background: rgba(21,30,33,.84); font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
 @media (prefers-reduced-motion: reduce) { .splash-screen, .splash-mark { transition-duration: 1ms; transform: none; } }
 
 /* Main title screen background: keep the scout silhouette lower-right on portrait mobile. */

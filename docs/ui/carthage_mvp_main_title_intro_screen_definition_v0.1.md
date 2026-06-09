@@ -2,44 +2,41 @@
 
 ## Screen purpose
 
-The main title intro appears after the Heick Games splash. Its job is to establish a cold Alpine survival mood before the player enters the MVP menu. The player should see fog clearing from the scouting scene, then receive a simple invitation to begin.
+After the Heick Games launch splash, the main title intro establishes the cold Alpine reconnaissance mood before the player enters the MVP menu. The scene begins in fog and gradually clears, reinforcing that the scout is trying to reveal a survivable route for Hannibal's army.
 
 ## Asset names and paths
 
-Required designer-provided images:
+Use the actual repository assets exactly as named:
 
-- `public/assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`
-- `public/assets/backgrounds/bg_main_alpine_scout_clear.jpg`
+- Splash logo: `public/assets/logos/logo_ref_heick_games_full.png`
+- Fog intro background: `public/assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`
+- Clear title background: `public/assets/backgrounds/bg_main_alpine_scout_clear.jpg`
 
 Runtime paths must remain Vite/GitHub Pages compatible:
 
+- `${import.meta.env.BASE_URL}assets/logos/logo_ref_heick_games_full.png`
 - `${import.meta.env.BASE_URL}assets/backgrounds/bg_main_alpine_scout_fog_intro.jpg`
 - `${import.meta.env.BASE_URL}assets/backgrounds/bg_main_alpine_scout_clear.jpg`
 
-If either asset is temporarily missing, the CSS fallback gradients keep the title screen buildable and readable.
+## Launch sequence
 
-## Sequence
-
-1. Existing Heick Games splash screen fades out.
-2. Main title screen mounts.
-3. Clear background is placed as the bottom visual layer.
-4. Fog intro background is placed above the clear background.
-5. Fog intro layer animates away over roughly 3.2 seconds.
-6. When the reveal is complete, show:
-   - `터치하여 시작`
-   - Achievements button
-   - Settings button
-7. Achievements and Settings are clickable before the main menu opens.
-8. Tapping the main background while in the touch-to-start state fades in the main menu.
-9. Main menu shows New Game and Continue when a save exists.
+1. User opens the GitHub Pages app.
+2. Full-viewport dark Heick Games splash appears with `logo_ref_heick_games_full.png` centered.
+3. Logo fades in, holds briefly, then the splash fades out.
+4. Main title screen mounts.
+5. `bg_main_alpine_scout_clear.jpg` is placed as the bottom background layer.
+6. `bg_main_alpine_scout_fog_intro.jpg` is placed above the clear background.
+7. The fog layer clears away over roughly 3.2 seconds.
+8. When the reveal is complete, show `터치하여 시작`, Achievements, and Settings.
+9. Achievements and Settings are clickable before the main menu opens.
+10. Tapping the main background in the touch-to-start state fades in the main menu.
+11. The main menu shows `새 게임` and shows `이어하기` only when save data exists.
 
 ## State model
 
-The title screen should make these states clear in code:
-
-- `introFogReveal`: fog reveal is still running; utility buttons are hidden.
-- `touchToStart`: reveal is complete; utility buttons and `터치하여 시작` are visible.
-- `mainMenuOpen`: player tapped the background/prompt; touch prompt is muted and main menu buttons are visible.
+- `introFogReveal`: fog reveal is active; background taps are ignored; utility buttons and touch prompt are hidden.
+- `touchToStart`: reveal is complete; `터치하여 시작`, Achievements, and Settings are visible; background tap opens the menu.
+- `mainMenuOpen`: main menu buttons are visible; touch prompt is reduced; background tap does nothing.
 
 ## Layer structure
 
@@ -47,59 +44,65 @@ From back to front:
 
 1. Clear background layer.
 2. Fog intro background layer.
-3. Optional soft white/mist overlay.
+3. Optional soft white fog overlay.
 4. Dark lower gradient for readability.
-5. Title text/game logo layer.
+5. Title/game UI layer.
 6. Achievements and Settings utility buttons.
 7. `터치하여 시작` prompt.
 8. Main menu button group.
 9. Modal layer for Achievements or Settings placeholders.
 
+## Fog reveal behavior
+
+- Use lightweight CSS only: opacity, transform, clip-path, mask-image, gradients, and transitions are allowed.
+- The reveal should feel like white fog clearing away, not a hard cut.
+- A separate fog mask image is not required for this MVP pass.
+- If CSS mask support is unavailable, use the opacity/clip-path fallback animation.
+- No canvas, WebGL, particles, or heavy animation systems.
+
 ## Button behavior
 
 ### Achievements
 
-- Visible only after fog reveal completes.
-- Clickable in both `touchToStart` and `mainMenuOpen` states.
+- Appears only after the fog reveal completes.
+- Clickable in both `touchToStart` and `mainMenuOpen`.
 - Opens a placeholder modal until the achievement system exists.
-- Click must stop propagation so it does not open the main menu.
+- Click handlers must stop propagation so the menu does not open accidentally.
 
 ### Settings
 
-- Visible only after fog reveal completes.
-- Clickable in both `touchToStart` and `mainMenuOpen` states.
-- Uses the existing theme toggle as the only current MVP setting.
-- Click must stop propagation so it does not open the main menu.
+- Appears only after the fog reveal completes.
+- Clickable in both `touchToStart` and `mainMenuOpen`.
+- Uses the current MVP theme toggle if no full settings screen exists.
+- Click handlers must stop propagation so the menu does not open accidentally.
 
 ### Main background
 
-- During `touchToStart`, tapping the main background opens the main menu.
-- During `introFogReveal`, tapping does nothing.
-- During `mainMenuOpen`, tapping the background does not auto-start a game.
+- During `introFogReveal`, background taps are ignored.
+- During `touchToStart`, background tap opens the main menu.
+- During `mainMenuOpen`, background tap does nothing.
 
 ## Mobile crop notes
 
 - Full viewport, portrait-first layout.
 - Use `background-size: cover`.
-- Use background position around `68% center` so the scout silhouette remains near the lower-right or right-center composition area.
-- Keep the bottom gradient strong enough for `터치하여 시작` and menu buttons.
+- Use background position around `68% center` so the scout silhouette remains near the lower-right or right-center area.
+- Keep a dark bottom gradient strong enough for `터치하여 시작` and main menu buttons.
 - Buttons must remain large enough for mobile touch.
 
-## Animation notes
+## Accessibility / reduced motion notes
 
-- Prefer CSS-only opacity, clip-path, mask-image, transform, and gradient overlays.
-- No canvas, WebGL, or particle system.
-- Reveal should feel like white fog clearing rather than a hard cut.
-- If CSS mask support is unavailable, use the clip-path/opacity fallback.
-- Respect `prefers-reduced-motion` by shortening the animation.
+- Splash logo image must use alt text: `Heick Games logo`.
+- Respect `prefers-reduced-motion` by shortening the splash and simplifying the fog reveal.
+- Utility buttons and modal controls must be reachable as normal buttons.
 
 ## TODO / designer review
 
 - Confirm final placement of the title text relative to the scout silhouette.
-- Confirm if button labels should stay English (`Achievements`, `Settings`) or be localized.
-- Confirm final fog timing after real assets are added.
-- Confirm whether the seed field remains in the public main menu or moves to a developer/settings panel.
-- Provide final visual direction for achievement/settings modals.
+- Confirm whether `Achievements` and `Settings` labels should remain English or be localized.
+- Confirm final fog reveal timing after visual review on mobile devices.
+- Confirm whether the seed field remains on the public main menu or moves to a developer/settings area.
+- Provide final modal art direction once achievement/settings systems are designed.
 
 ## Explicit exclusions
 
