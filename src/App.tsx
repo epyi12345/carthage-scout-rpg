@@ -3,6 +3,7 @@ import { newGame } from './game/engine';
 import { hasSave, loadGame, saveGame } from './game/save';
 import type { GameState } from './game/types';
 import { GameScreen } from './screens/GameScreen';
+import { SplashScreen } from './components/SplashScreen';
 import { TitleScreen } from './screens/TitleScreen';
 
 type ThemeMode = 'dark' | 'light';
@@ -12,6 +13,7 @@ export function App() {
   const [state, setState] = useState<GameState>(() => loadGame() ?? newGame());
   const [saveExists, setSaveExists] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>('dark');
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => setSaveExists(hasSave()), [screen, state]);
 
@@ -39,6 +41,7 @@ export function App() {
         {theme === 'dark' ? 'Light' : 'Dark'}
       </button>
       {content}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
     </div>
   );
 }
