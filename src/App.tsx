@@ -32,7 +32,7 @@ export function App() {
   };
 
   const content = screen === 'title'
-    ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} />
+    ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} themeLabel={theme === 'dark' ? '밝은' : '어두운'} />
     : <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
 
   return (

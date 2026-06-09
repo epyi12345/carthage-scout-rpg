@@ -3,10 +3,11 @@ import { BottomNav } from '../components/BottomNav';
 import { ChoicePanel } from '../components/ChoicePanel';
 import { DevPanel } from '../components/DevPanel';
 import { EncounterView } from '../components/EncounterView';
+import { InGameFrame } from '../components/InGameFrame';
 import { InventoryView } from '../components/InventoryView';
 import { LogPanel } from '../components/LogPanel';
 import { MapView } from '../components/MapView';
-import { StatusPanel } from '../components/StatusPanel';
+import { TopStatusBar } from '../components/TopStatusBar';
 import { getEncounter } from '../game/encounter';
 import { applyChoice, markRouteTile, movePlayer, newGame, observeTile, recordTile, rest, returnToCamp } from '../game/engine';
 import { directionLabel, getNeighbors } from '../game/map';
@@ -51,11 +52,12 @@ export function GameScreen({ state, setState, onTitle }: Props) {
   }
 
   return (
-    <main className="phone-shell game-shell recon-shell">
-      <StatusPanel state={state} />
-      <div className="content-area">{content}</div>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} mapUnlocked />
-    </main>
+    <InGameFrame
+      statusSlot={<TopStatusBar state={state} />}
+      navigationSlot={<BottomNav activeTab={activeTab} onTabChange={setActiveTab} mapUnlocked />}
+    >
+      {content}
+    </InGameFrame>
   );
 }
 
