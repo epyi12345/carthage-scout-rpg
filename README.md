@@ -24,13 +24,23 @@ npm run preview
 
 Vite 정적 빌드 결과물은 `dist/`에 생성됩니다. 이 저장소는 GitHub Pages 서브패스 배포를 위해 `vite.config.ts`의 `base` 값을 `/carthage-scout-rpg/`로 설정합니다.
 
-자동 배포는 `.github/workflows/deploy-pages.yml`에서 관리합니다. `mvp` 브랜치에 push되면 워크플로가 의존성을 설치하고, 타입 체크를 실행하고, 정적 사이트를 빌드한 뒤 `dist/`를 GitHub Pages에 배포합니다.
+자동 배포는 `.github/workflows/deploy-pages.yml`에서 관리합니다. `main` 또는 `mvp` 브랜치에 push되면 워크플로가 의존성을 설치하고, 타입 체크를 실행하고, 정적 사이트를 빌드한 뒤 `dist/`를 GitHub Pages에 배포합니다.
 
 GitHub 저장소 설정에서 필요한 항목:
 
-1. **Settings → Pages → Build and deployment → Source**를 `GitHub Actions`로 설정합니다.
+1. **Settings → Pages → Build and deployment → Source**를 `GitHub Actions`로 설정합니다. `Deploy from a branch`를 선택하면 원본 `index.html`이 배포되어 `/src/main.tsx` 404가 발생할 수 있습니다.
 2. **Settings → Actions → General**에서 Actions 실행이 허용되어 있어야 합니다.
-3. 배포 브랜치는 워크플로 기준으로 `mvp`입니다. `mvp`에 push하거나 워크플로를 수동 실행하면 Pages 배포가 진행됩니다.
+3. 배포 브랜치는 워크플로 기준으로 `main` 또는 `mvp`입니다. 두 브랜치 중 하나에 push하거나 워크플로를 수동 실행하면 Pages 배포가 진행됩니다.
+4. 프로젝트 Pages URL은 보통 `https://<계정>.github.io/carthage-scout-rpg/`입니다. 저장소 루트가 아닌 사용자 사이트 루트(`https://<계정>.github.io/`)를 열면 다른 Pages 설정을 보게 될 수 있습니다.
+
+### `/src/main.tsx` 404가 보일 때
+
+브라우저 네트워크 탭에 `GET https://<계정>.github.io/src/main.tsx 404`가 보이면 Vite 빌드 결과가 아니라 개발용 원본 `index.html`이 GitHub Pages에 올라간 상태입니다. 이 경우:
+
+1. **Settings → Pages → Build and deployment → Source**가 반드시 `GitHub Actions`인지 확인합니다.
+2. **Actions** 탭에서 `Deploy GitHub Pages` 워크플로가 성공했는지 확인합니다.
+3. 배포된 주소가 `https://<계정>.github.io/carthage-scout-rpg/`인지 확인합니다.
+4. 성공한 워크플로의 artifact가 `dist/`를 업로드했는지 확인합니다. 빌드된 `dist/index.html`은 `/src/main.tsx`가 아니라 `/carthage-scout-rpg/assets/...js`를 참조해야 합니다.
 
 로컬 확인:
 
