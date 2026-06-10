@@ -18,7 +18,7 @@ export function MapLayerTest() {
     <main className="map-test-page" aria-label="지도 레이어 테스트 페이지">
       <section className="panel map-test-panel">
         <p className="eyebrow">Map Layer Test</p>
-        <h1>BaseMapLayer 시각 확인</h1>
+        <h1>Map Test</h1>
         <p className="muted">
           실제 기본 지형도 <code>map_base_alpine_terrain_v0.png</code>를 모바일 양피지 프레임 안에서 확인한다.
           이미지가 잘리지 않고 전체 비율을 유지하는지 확인하기 위한 테스트 화면이다.
@@ -35,6 +35,7 @@ export function MapLayerTest() {
             className="map-test-direct-image"
             src={BASE_MAP_SRC}
             alt="Carthage Scout RPG alpine terrain base map direct preview"
+            style={{ display: 'block', width: '100%', maxWidth: '480px', height: 'auto', objectFit: 'contain', objectPosition: 'center', opacity: 1, visibility: 'visible' }}
             onLoad={() => setLoadStatus('Map image loaded')}
             onError={() => setLoadStatus('Map image failed to load')}
           />
@@ -53,6 +54,7 @@ export function MapLayerTest() {
               className="map-test-base-image"
               src={BASE_MAP_SRC}
               alt="Carthage Scout RPG alpine terrain base map framed preview"
+              style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', opacity: 1, visibility: 'visible' }}
               onLoad={() => setLoadStatus('Map image loaded')}
               onError={() => setLoadStatus('Map image failed to load')}
             />

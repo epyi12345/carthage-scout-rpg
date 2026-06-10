@@ -533,3 +533,15 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
   opacity: 1;
   visibility: visible;
 }
+.map-test-link {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  margin-top: .75rem;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 14px;
+  background: rgba(34,45,48,.86);
+  color: #f3ead8;
+  font-weight: 800;
+  text-decoration: none;
+}

@@ -86,6 +86,7 @@ export function MainTitleScreen({ hasSave, onNewGame, onContinue, onToggleTheme,
           <button onClick={() => onNewGame(seed)}>새 게임</button>
           {hasSave && <button onClick={onContinue}>이어하기</button>}
         </div>
+        <a className="map-test-link" href="#/map-test">지도 테스트</a>
         <p className="version-label">MVP v0.1 · Mobile Web Prototype</p>
       </section>
 
