@@ -4,8 +4,8 @@ import { ChoicePanel } from '../components/ChoicePanel';
 import { DevPanel } from '../components/DevPanel';
 import { EncounterView } from '../components/EncounterView';
 import { InGameFrame } from '../components/InGameFrame';
+import { InGamePlayScreen, type ChoiceViewModel } from '../features/ingame/InGamePlayScreen';
 import { InventoryView } from '../components/InventoryView';
-import { LogPanel } from '../components/LogPanel';
 import { MapView } from '../components/MapView';
 import { TopStatusBar } from '../components/TopStatusBar';
 import { getEncounter } from '../game/encounter';
@@ -49,8 +49,11 @@ export function GameScreen({ state, setState, onTitle }: Props) {
     else if (state.ending) content = <EndingPanel state={state} onRestart={restart} onTitle={onTitle} />;
     else if (encounter) content = <EncounterView encounter={encounter} state={state} onChoose={choose} />;
     else if (confirmReturn) content = <ReturnConfirmation state={state} onCancel={() => setConfirmReturn(false)} onConfirm={() => updateState(returnToCamp(state))} />;
-    else content = <ActionPanel state={state} neighbors={neighbors} selectedTileId={selectedTileId} onSelectTile={setSelectedTileId} onMove={(direction) => updateState(movePlayer(state, direction))} onObserve={(tileId) => updateState(observeTile(state, tileId))} onRecord={(tileId) => updateState(recordTile(state, tileId))} onRest={() => updateState(rest(state))} onReturn={() => setConfirmReturn(true)} {...mapActions} />;
+    else content = <ActionPanel state={state} neighbors={neighbors} onMove={(direction) => updateState(movePlayer(state, direction))} onObserve={(tileId) => updateState(observeTile(state, tileId))} onRecord={(tileId) => updateState(recordTile(state, tileId))} onRest={() => updateState(rest(state))} onReturn={() => setConfirmReturn(true)} onOpenInventory={() => setActiveTab('inventory')} onOpenSettings={() => setActiveTab('dev')} onOpenAchievements={() => setActiveTab('dev')} />;
   }
+
+  const usesFullPlayFrame = activeTab === 'story' && !state.isDead && !state.ending && !encounter && !confirmReturn;
+  if (usesFullPlayFrame) return <>{content}</>;
 
   return (
     <InGameFrame
@@ -62,36 +65,63 @@ export function GameScreen({ state, setState, onTitle }: Props) {
   );
 }
 
-function ActionPanel({ state, neighbors, selectedTileId, onSelectTile, onMove, onObserve, onRecord, onRest, onReturn, onObserveTile, onRecordTile, onMarkRouteTile, onPlaceMarker }: {
+function ActionPanel({ state, neighbors, onMove, onObserve, onRecord, onRest, onReturn, onOpenInventory, onOpenSettings, onOpenAchievements }: {
   state: GameState;
   neighbors: ReturnType<typeof getNeighbors>;
-  selectedTileId: string;
-  onSelectTile: (tileId: string) => void;
   onMove: (direction: ReturnType<typeof getNeighbors>[number]['direction']) => void;
   onObserve: (tileId: string) => void;
   onRecord: (tileId: string) => void;
   onRest: () => void;
   onReturn: () => void;
-  onObserveTile: (tileId: string) => void;
-  onRecordTile: (tileId: string) => void;
-  onMarkRouteTile: (tileId: string) => void;
-  onPlaceMarker: (x: number, y: number) => void;
+  onOpenInventory: () => void;
+  onOpenSettings: () => void;
+  onOpenAchievements: () => void;
 }) {
   const recordableTiles = state.playerMap.filter((tile) => tile.state !== 'unknown' && tile.state !== 'recorded' && tile.state !== 'route_connected');
+  const choices: ChoiceViewModel[] = [
+    ...neighbors.map((neighbor) => ({ id: `move:${neighbor.direction}`, label: `${directionLabel(neighbor.direction)} 이동` })),
+    ...neighbors.map((neighbor) => ({ id: `observe:${neighbor.id}`, label: `${neighbor.id} 관측` })),
+    { id: `record:${state.player.position}`, label: `현재 위치 ${state.player.position} 기록` },
+    ...recordableTiles.slice(0, 2).map((tile) => ({ id: `record:${tile.id}`, label: `${tile.id} 기록` })),
+    { id: 'rest', label: '휴식한다' },
+    { id: 'return', label: '야영지로 복귀한다' },
+  ];
+
+  const narrative = [
+    '눈보라가 잠시 잦아든다.',
+    `현재 위치는 ${state.player.position}이다. 체온 ${state.player.warmth}, 체력 ${state.player.health}, 피로 ${state.player.fatigue}.`,
+    '멀리서 얼어붙은 절벽의 윤곽이 드러난다.',
+    '길을 잘못 들면 다시 돌아오기 어려울 것이다.',
+    ...(state.feedbackMessage ? [state.feedbackMessage] : []),
+    ...state.lastLog.slice(-2),
+  ];
+
+  const handleChoiceSelect = (choiceId: string) => {
+    if (choiceId.startsWith('move:')) {
+      onMove(choiceId.replace('move:', '') as ReturnType<typeof getNeighbors>[number]['direction']);
+      return;
+    }
+    if (choiceId.startsWith('observe:')) {
+      onObserve(choiceId.replace('observe:', ''));
+      return;
+    }
+    if (choiceId.startsWith('record:')) {
+      onRecord(choiceId.replace('record:', ''));
+      return;
+    }
+    if (choiceId === 'rest') onRest();
+    if (choiceId === 'return') onReturn();
+  };
+
   return (
-    <>
-      <MapView state={state} selectedTileId={selectedTileId} onSelectTile={onSelectTile} onObserveTile={onObserveTile} onRecordTile={onRecordTile} onMarkRouteTile={onMarkRouteTile} onPlaceMarker={onPlaceMarker} />
-      <section className="panel story-panel action-panel">
-        <p className="eyebrow">MVP 정찰 루프</p>
-        <h1>알프스 정찰</h1>
-        <p>혼자 지나갈 길이 아니라 한니발의 군대가 살아남을 수 있는 길을 관측하고 기록하라.</p>
-        <LogPanel entries={state.lastLog} feedback={state.feedbackMessage} />
-        <ChoicePanel title="이동" columns={2} actions={neighbors.map((neighbor) => ({ id: `move-${neighbor.id}`, label: `${directionLabel(neighbor.direction)} 이동`, detail: neighbor.id, onSelect: () => onMove(neighbor.direction) }))} />
-        <ChoicePanel title="관측" columns={2} actions={neighbors.map((neighbor) => ({ id: `observe-${neighbor.id}`, label: `${neighbor.id} 관측`, detail: '임시 단서 확인', onSelect: () => onObserve(neighbor.id) }))} />
-        <ChoicePanel title="빠른 기록" columns={2} actions={[{ id: 'record-current', label: '현재 타일 기록', detail: state.player.position, onSelect: () => onRecord(state.player.position) }, ...recordableTiles.slice(0, 3).map((tile) => ({ id: `record-${tile.id}`, label: `${tile.id} 기록`, detail: tile.playerKnowledgeState, onSelect: () => onRecord(tile.id) }))]} />
-        <ChoicePanel title="생존 / 복귀" actions={[{ id: 'rest', label: '휴식', detail: '식량을 쓰고 체온/피로 회복', onSelect: onRest }, { id: 'return', label: '야영지로 복귀', detail: '현재 지도 품질로 평가받기', variant: 'danger', onSelect: onReturn }]} />
-      </section>
-    </>
+    <InGamePlayScreen
+      narrative={narrative}
+      choices={choices}
+      onChoiceSelect={handleChoiceSelect}
+      onOpenInventory={onOpenInventory}
+      onOpenSettings={onOpenSettings}
+      onOpenAchievements={onOpenAchievements}
+    />
   );
 }
 
