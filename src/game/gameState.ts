@@ -1,4 +1,4 @@
-import { createPlayerMap, generateSystemMap, tileId } from './mapGenerator';
+import { createParchmentPlayerMap, createPlayerMap, generateParchmentSystemMap, generateSystemMap, syncParchmentVisibilityForPosition, tileId } from './mapGenerator';
 import type { GamePhase, GameState, PlayerState } from './types';
 
 export const DEFAULT_MAX_DAYS = 7;
@@ -12,6 +12,8 @@ function createRunId(seed: string): string {
 }
 
 export function syncGameStateAliases(state: GameState): GameState {
+  const parchmentReadyState = syncParchmentVisibilityForPosition(state);
+  state = parchmentReadyState;
   const observedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'observed').map((tile) => tile.id);
   const scoutedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'scouted').map((tile) => tile.id);
   const recordedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'recorded').map((tile) => tile.id);
@@ -58,6 +60,8 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
   const systemMap = generateSystemMap(normalizedSeed, mapSize);
   const startTile = tileId(Math.floor(mapSize / 2), mapSize - 1);
   const playerMap = createPlayerMap(systemMap, startTile);
+  const parchmentSystemMap = generateParchmentSystemMap(normalizedSeed);
+  const parchmentPlayerMap = createParchmentPlayerMap(parchmentSystemMap, startTile, mapSize);
   const playerState: PlayerState = {
     health: 100,
     maxHealth: 100,
@@ -92,6 +96,8 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
     mapSize,
     systemMap,
     playerMap,
+    parchmentSystemMap,
+    parchmentPlayerMap,
     player: playerState,
     actionCount: 0,
     currentEncounterId: null,

@@ -272,3 +272,129 @@ export function rankTileState(state: TileState): number {
 export function directionLabel(direction: Direction): string {
   return { north: '북쪽', south: '남쪽', east: '동쪽', west: '서쪽' }[direction];
 }
+
+export const PARCHMENT_BASE_MAP_ID = 'map_base_alpine_parchment_v0_1';
+
+const PARCHMENT_MAJOR_REGIONS = [
+  { id: 'region_western_ridge', x: 23, y: 28, label: '서쪽 능선' },
+  { id: 'region_black_forest', x: 34, y: 58, label: '검은 숲' },
+  { id: 'region_frozen_pass', x: 61, y: 36, label: '얼어붙은 고개' },
+  { id: 'region_northern_objective', x: 54, y: 11, label: '북쪽 통과 후보지' },
+];
+
+function pointDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function makePoint(id: string, type: import('./types').MapPointType, x: number, y: number, label: string, encounterId: string | null = null, spacingWeight = 1): import('./types').MapPoint {
+  return { id, type, x, y, label, encounterId, internalRef: id, discovered: false, visible: false, influenceRadius: type === 'major_region' ? 13 : 9, spacingWeight };
+}
+
+function scatterPoint(rng: () => number, existing: Array<{ x: number; y: number }>, bounds: { minX: number; maxX: number; minY: number; maxY: number }, minDistance: number): { x: number; y: number } {
+  let best = { x: bounds.minX + rng() * (bounds.maxX - bounds.minX), y: bounds.minY + rng() * (bounds.maxY - bounds.minY) };
+  let bestDistance = 0;
+  for (let attempt = 0; attempt < 36; attempt += 1) {
+    const candidate = { x: bounds.minX + rng() * (bounds.maxX - bounds.minX), y: bounds.minY + rng() * (bounds.maxY - bounds.minY) };
+    const nearest = existing.length ? Math.min(...existing.map((point) => pointDistance(point, candidate))) : minDistance;
+    if (nearest >= minDistance) return candidate;
+    if (nearest > bestDistance) {
+      best = candidate;
+      bestDistance = nearest;
+    }
+  }
+  return best;
+}
+
+function buildPointRelations(points: import('./types').MapPoint[]): import('./types').MapPointRelation[] {
+  return points.flatMap((point) => {
+    const nearest = points
+      .filter((candidate) => candidate.id !== point.id)
+      .map((candidate) => ({ point: candidate, distance: pointDistance(point, candidate) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 2);
+    return nearest.map(({ point: target, distance }) => ({
+      fromPointId: point.id,
+      toPointId: target.id,
+      distance: Number(distance.toFixed(2)),
+      densityHint: distance < 15 ? 'dense' : distance > 29 ? 'sparse' : 'normal',
+    }));
+  });
+}
+
+export function generateParchmentSystemMap(seed: string): import('./types').SystemMap {
+  const rng = createRng(`${seed}:parchment-points`);
+  const points: import('./types').MapPoint[] = [
+    makePoint('camp_start', 'fixed_encounter', 50, 90, '카르타고 야영지', null, 2),
+    ...PARCHMENT_MAJOR_REGIONS.map((region) => makePoint(region.id, 'major_region', region.x, region.y, region.label, null, 1.4)),
+  ];
+
+  const mainEncounters = ['enc_highground_observation_001', 'enc_collapsed_path_001', 'enc_frozen_ravine_001', 'enc_distant_smoke_001'];
+  for (const encounterId of mainEncounters) {
+    const position = scatterPoint(rng, points, { minX: 18, maxX: 82, minY: 14, maxY: 78 }, 17);
+    points.push(makePoint(`main_${encounterId}`, 'main_encounter', Number(position.x.toFixed(2)), Number(position.y.toFixed(2)), '주요 단서', encounterId, 1.8));
+  }
+
+  const fixedEncounters = ['enc_dead_scout_001', 'enc_return_route_hazard_001'];
+  for (const encounterId of fixedEncounters) {
+    const position = scatterPoint(rng, points, { minX: 16, maxX: 84, minY: 18, maxY: 82 }, 15);
+    points.push(makePoint(`fixed_${encounterId}`, 'fixed_encounter', Number(position.x.toFixed(2)), Number(position.y.toFixed(2)), '고정 사건', encounterId, 1.5));
+  }
+
+  const optionalCount = 5 + Math.floor(rng() * 3);
+  const optionalEncounters = ['enc_abandoned_supplies_001', 'enc_cave_shelter_001', 'enc_animal_tracks_001', 'enc_mountain_tribe_traces_001'];
+  for (let index = 0; index < optionalCount; index += 1) {
+    const position = scatterPoint(rng, points, { minX: 12, maxX: 88, minY: 12, maxY: 86 }, 12);
+    const encounterId = optionalEncounters[index % optionalEncounters.length];
+    points.push(makePoint(`optional_${index + 1}`, 'optional_resource', Number(position.x.toFixed(2)), Number(position.y.toFixed(2)), index % 2 === 0 ? '자원 흔적' : '선택 단서', encounterId, 1));
+  }
+
+  const relations = buildPointRelations(points);
+  const relationDistances = relations.map((relation) => relation.distance);
+  const averagePointDistance = relationDistances.reduce((sum, distance) => sum + distance, 0) / Math.max(1, relationDistances.length);
+  const encounterDensity = Number((points.filter((point) => point.encounterId).length / Math.max(1, averagePointDistance)).toFixed(3));
+
+  return {
+    seed,
+    baseMapId: PARCHMENT_BASE_MAP_ID,
+    points,
+    pointRelations: relations,
+    spacingMetadata: {
+      minPointDistance: Number(Math.min(...relationDistances).toFixed(2)),
+      averagePointDistance: Number(averagePointDistance.toFixed(2)),
+      encounterDensity,
+    },
+  };
+}
+
+export function tileToParchmentPosition(tileIdValue: string, size = MVP_MAP_SIZE): { x: number; y: number } {
+  const { x, y } = parseTileId(tileIdValue);
+  return {
+    x: Number((((x + 0.5) / size) * 100).toFixed(2)),
+    y: Number((((y + 0.5) / size) * 100).toFixed(2)),
+  };
+}
+
+export function revealParchmentArea(systemMap: import('./types').SystemMap, playerMap: import('./types').PlayerMap, x: number, y: number, radius = 15, source: import('./types').RevealedArea['source'] = 'movement'): import('./types').PlayerMap {
+  const areaId = `${source}-${Math.round(x * 10)}-${Math.round(y * 10)}-${Math.round(radius * 10)}`;
+  const revealedAreas = playerMap.revealedAreas.some((area) => area.id === areaId) ? playerMap.revealedAreas : [...playerMap.revealedAreas, { id: areaId, x, y, radius, source }];
+  const visiblePointIds = systemMap.points.filter((point) => revealedAreas.some((area) => pointDistance(point, area) <= area.radius + point.influenceRadius * 0.3)).map((point) => point.id);
+  const discoveredPointIds = Array.from(new Set([...playerMap.discoveredPointIds, ...visiblePointIds]));
+  return { ...playerMap, revealedAreas, visiblePointIds, discoveredPointIds };
+}
+
+export function createParchmentPlayerMap(systemMap: import('./types').SystemMap, startTileId: string, size = MVP_MAP_SIZE): import('./types').PlayerMap {
+  const start = tileToParchmentPosition(startTileId, size);
+  return revealParchmentArea(systemMap, { revealedAreas: [], discoveredPointIds: [], visiblePointIds: [], placedMarkers: [], routeNotes: ['출발 지점 주변만 확실히 드러나 있다.'] }, start.x, start.y, 17, 'start');
+}
+
+export function syncParchmentVisibilityForPosition(state: GameState): GameState {
+  const systemMap = state.parchmentSystemMap ?? generateParchmentSystemMap(state.seed || state.mapSeed || 'mvp');
+  const basePlayerMap = state.parchmentPlayerMap ?? createParchmentPlayerMap(systemMap, state.player?.campPosition ?? state.startLocation ?? tileId(Math.floor((state.mapSize ?? MVP_MAP_SIZE) / 2), (state.mapSize ?? MVP_MAP_SIZE) - 1), state.mapSize ?? MVP_MAP_SIZE);
+  const position = tileToParchmentPosition(state.player?.position ?? state.playerPosition ?? state.location, state.mapSize ?? MVP_MAP_SIZE);
+  return { ...state, parchmentSystemMap: systemMap, parchmentPlayerMap: revealParchmentArea(systemMap, basePlayerMap, position.x, position.y, 15, 'movement') };
+}
+
+export function placePlayerMarkerOnMap(playerMap: import('./types').PlayerMap, x: number, y: number, type: import('./types').PlayerMarkerType = 'return', note?: string): import('./types').PlayerMap {
+  const marker = { id: `marker-${Date.now().toString(36)}-${Math.round(x)}-${Math.round(y)}`, x: Number(x.toFixed(2)), y: Number(y.toFixed(2)), type, note };
+  return { ...playerMap, placedMarkers: [...playerMap.placedMarkers, marker].slice(-20) };
+}

@@ -69,6 +69,67 @@ export interface Coordinate {
   y: number;
 }
 
+
+export type MapPointType = 'major_region' | 'fixed_encounter' | 'main_encounter' | 'optional_resource' | 'return_landmark';
+export type PlayerMarkerType = 'route' | 'danger' | 'resource' | 'return' | 'question';
+
+export interface MapPointRelation {
+  fromPointId: string;
+  toPointId: string;
+  distance: number;
+  densityHint: 'sparse' | 'normal' | 'dense';
+}
+
+export interface MapPoint {
+  id: string;
+  type: MapPointType;
+  x: number;
+  y: number;
+  discovered: boolean;
+  visible: boolean;
+  encounterId?: string | null;
+  label?: string;
+  internalRef?: string;
+  influenceRadius: number;
+  spacingWeight: number;
+}
+
+export interface SystemMap {
+  seed: string;
+  baseMapId: string;
+  points: MapPoint[];
+  pointRelations: MapPointRelation[];
+  spacingMetadata: {
+    minPointDistance: number;
+    averagePointDistance: number;
+    encounterDensity: number;
+  };
+}
+
+export interface RevealedArea {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  source: 'start' | 'movement' | 'observation' | 'marker';
+}
+
+export interface PlayerMarker {
+  id: string;
+  x: number;
+  y: number;
+  type: PlayerMarkerType;
+  note?: string;
+}
+
+export interface PlayerMap {
+  revealedAreas: RevealedArea[];
+  discoveredPointIds: string[];
+  visiblePointIds: string[];
+  placedMarkers: PlayerMarker[];
+  routeNotes: string[];
+}
+
 export interface ObservedTileHint {
   terrainHint: string;
   riskBand: RiskBand;
@@ -194,6 +255,8 @@ export interface GameState {
   mapSize: number;
   systemMap: MapTile[];
   playerMap: PlayerMapTile[];
+  parchmentSystemMap: SystemMap;
+  parchmentPlayerMap: PlayerMap;
   player: PlayerState;
   actionCount: number;
   currentEncounterId: string | null;

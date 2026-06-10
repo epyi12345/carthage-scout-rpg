@@ -358,3 +358,92 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
   .title-bg-fog, .title-soft-white-overlay { animation-duration: 1ms; }
   .title-utility-actions, .title-main-menu, .touch-to-start { animation-duration: 1ms; transition-duration: 1ms; }
 }
+
+.map-panel { overflow: hidden; }
+.parchment-map-frame {
+  margin-top: .9rem;
+  padding: .7rem .55rem .9rem;
+  border: 1px solid rgba(102, 76, 38, .72);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(83, 61, 35, .65), rgba(25, 20, 15, .88));
+  box-shadow: inset 0 0 24px rgba(0,0,0,.38), 0 16px 60px rgba(0,0,0,.28);
+}
+.map-handle { display: grid; place-items: center; padding-bottom: .45rem; }
+.map-handle span { width: min(52vw, 240px); height: 9px; border-radius: 999px; background: linear-gradient(90deg, #3e2a18, #b18a4e, #3e2a18); box-shadow: 0 3px 12px rgba(0,0,0,.4); }
+.parchment-map-surface {
+  position: relative;
+  min-height: min(92vw, 440px);
+  max-height: 62vh;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(72, 49, 24, .82);
+  border-radius: 14px;
+  background: #b9945b;
+  touch-action: manipulation;
+  cursor: crosshair;
+}
+.base-map-layer, .visible-point-layer, .player-marker-layer, .fog-of-war-layer { position: absolute; inset: 0; }
+.base-map-layer {
+  background-image:
+    var(--base-map-image),
+    radial-gradient(circle at 32% 28%, rgba(77, 95, 87, .34), transparent 24%),
+    radial-gradient(circle at 66% 42%, rgba(63, 76, 82, .38), transparent 22%),
+    linear-gradient(145deg, #d1ae72, #9e7845 52%, #6f4f2f);
+  background-size: cover;
+  background-position: center;
+  filter: sepia(.28) contrast(1.05) saturate(.78);
+}
+.base-map-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(28deg, transparent 0 18%, rgba(67, 55, 39, .38) 18% 20%, transparent 20% 100%),
+    linear-gradient(152deg, transparent 0 41%, rgba(53, 47, 39, .28) 41% 43%, transparent 43% 100%),
+    radial-gradient(circle at 50% 52%, transparent 48%, rgba(44, 28, 14, .42) 100%);
+  mix-blend-mode: multiply;
+}
+.fog-of-war-layer { z-index: 5; width: 100%; height: 100%; pointer-events: none; }
+.visible-point-layer { z-index: 3; pointer-events: none; }
+.map-point {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 237, 184, .86);
+  background: rgba(45, 31, 16, .78);
+  color: #ffe4a7;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.18), 0 7px 18px rgba(0,0,0,.35);
+  pointer-events: auto;
+}
+.map-point span { transform: translateY(-1px); }
+.map-point-main_encounter { background: rgba(93, 44, 30, .86); }
+.map-point-fixed_encounter { background: rgba(57, 60, 66, .86); }
+.map-point-optional_resource { background: rgba(53, 88, 62, .86); }
+.map-point-major_region { background: rgba(75, 62, 38, .86); }
+.map-point.selected { outline: 3px solid #f6d58b; outline-offset: 2px; }
+.player-marker-layer { z-index: 4; pointer-events: none; }
+.player-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50% 50% 50% 8px;
+  background: rgba(217, 181, 108, .94);
+  color: #1b160d;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(0,0,0,.35);
+}
+.map-legend { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .75rem; color: #d8e3df; font-size: .78rem; }
+.map-legend span { padding: .28rem .5rem; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+.parchment-record-panel .point-detail-card { display: grid; gap: .28rem; margin-top: .8rem; padding: .75rem; border-radius: 14px; background: rgba(0,0,0,.18); color: #e8ded0; }
+.parchment-record-panel .choice-card { width: 100%; margin-top: .7rem; }
+@media (max-width: 370px) { .map-point { width: 30px; height: 30px; min-height: 30px; } .parchment-map-frame { padding-inline: .35rem; } }

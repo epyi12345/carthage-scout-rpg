@@ -1,5 +1,5 @@
 import { evaluateEnding } from './endingEvaluator';
-import { getNeighbors, getSystemTile, revealTile, updatePlayerTile } from './map';
+import { getNeighbors, getSystemTile, placePlayerMarkerOnMap, revealTile, updatePlayerTile } from './map';
 import { clamp, startNewGame as createGameState, syncGameStateAliases } from './gameState';
 import type { Direction, EncounterChoice, EncounterConditions, EncounterEffects, GameState, RecordTileData, RelationshipScore, TileMarkState } from './types';
 
@@ -299,6 +299,13 @@ export function rest(state: GameState): GameState {
     },
   }, '눈을 피해 쉬며 체온과 기력을 추슬렀다.');
   return syncLegacyFields(next);
+}
+
+
+export function placePlayerMarker(state: GameState, x: number, y: number): GameState {
+  const parchmentPlayerMap = placePlayerMarkerOnMap(state.parchmentPlayerMap, x, y, 'return', '수동 귀환 표식');
+  const lastLog = appendLog(state, `지도에 귀환 표식을 남겼다. (${Math.round(x)}, ${Math.round(y)})`);
+  return syncLegacyFields({ ...state, parchmentPlayerMap, lastLog, log: lastLog });
 }
 
 export function returnToCamp(state: GameState): GameState {

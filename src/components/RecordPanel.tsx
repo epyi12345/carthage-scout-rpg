@@ -1,45 +1,50 @@
-import { getNeighbors } from '../game/mapGenerator';
-import type { GameState, PlayerMapTile } from '../game/types';
+import type { MapPoint, PlayerMap } from '../game/types';
 
 interface Props {
-  state: GameState;
-  tile: PlayerMapTile;
-  onObserve?: (tileId: string) => void;
-  onRecord?: (tileId: string) => void;
-  onMarkRoute?: (tileId: string) => void;
+  point?: MapPoint;
+  playerMap: PlayerMap;
+  selectedCoordinates?: { x: number; y: number } | null;
+  onPlaceMarker?: (x: number, y: number) => void;
 }
 
-function canObserve(state: GameState, tile: PlayerMapTile): boolean {
-  return tile.playerKnowledgeState === 'unknown' && getNeighbors(state.player.position, state.mapSize).some((neighbor) => neighbor.id === tile.id);
+function pointTypeLabel(point: MapPoint): string {
+  return {
+    major_region: '주요 지역',
+    fixed_encounter: '고정 사건',
+    main_encounter: '주요 사건',
+    optional_resource: '자원/선택 단서',
+    return_landmark: '귀환 기준점',
+  }[point.type];
 }
 
-function canRecord(tile: PlayerMapTile): boolean {
-  return tile.playerKnowledgeState === 'observed' || tile.playerKnowledgeState === 'scouted';
-}
-
-function canMarkRoute(tile: PlayerMapTile): boolean {
-  return tile.playerKnowledgeState === 'recorded' && !tile.isRouteMarked;
-}
-
-export function RecordPanel({ state, tile, onObserve, onRecord, onMarkRoute }: Props) {
+export function RecordPanel({ point, playerMap, selectedCoordinates, onPlaceMarker }: Props) {
   return (
-    <article className="record-panel">
+    <article className="record-panel parchment-record-panel">
       <div className="section-heading">
-        <h2>기록 도구</h2>
-        <span>{tile.id}</span>
+        <h2>지도 기록 도구</h2>
+        <span>{point ? pointTypeLabel(point) : '수동 표식'}</span>
       </div>
-      <p className="muted">관측은 임시 단서다. 군대가 믿을 수 있는 정보로 남기려면 직접 기록해야 한다.</p>
+      <p className="muted">이 지도는 격자 타일이 아니라 양피지 지형도다. 보이는 지점만 확인되고, 빈 지점에는 직접 귀환 표식을 남길 수 있다.</p>
       <div className="record-summary">
-        <span>상태: {tile.playerKnowledgeState}</span>
-        <span>기록 위험: {tile.playerRecordedRisk ?? '없음'}</span>
-        <span>경로 표시: {tile.isRouteMarked ? '예' : '아니오'}</span>
+        <span>드러난 영역: {playerMap.revealedAreas.length}</span>
+        <span>발견 지점: {playerMap.discoveredPointIds.length}</span>
+        <span>수동 표식: {playerMap.placedMarkers.length}</span>
       </div>
-      <div className="record-actions">
-        {canObserve(state, tile) && <button className="choice-card" onClick={() => onObserve?.(tile.id)}><strong>이 타일 관측</strong><span>인접 지형의 단서만 확인한다.</span></button>}
-        {canRecord(tile) && <button className="choice-card" onClick={() => onRecord?.(tile.id)}><strong>지도에 기록</strong><span>복귀 평가에 반영되는 정보로 남긴다.</span></button>}
-        {canMarkRoute(tile) && <button className="choice-card" onClick={() => onMarkRoute?.(tile.id)}><strong>한니발 경로 후보로 연결</strong><span>군대 통과 가능 경로로 표시한다.</span></button>}
-        {!canObserve(state, tile) && !canRecord(tile) && !canMarkRoute(tile) && <p className="muted">현재 상태에서 가능한 지도 행동이 없다.</p>}
-      </div>
+      {point ? (
+        <div className="point-detail-card">
+          <strong>{point.label ?? point.id}</strong>
+          <span>ID: {point.id}</span>
+          <span>유형: {pointTypeLabel(point)}</span>
+          {point.encounterId && <span>사건 단서: {point.encounterId}</span>}
+        </div>
+      ) : selectedCoordinates ? (
+        <button className="choice-card" onClick={() => onPlaceMarker?.(selectedCoordinates.x, selectedCoordinates.y)}>
+          <strong>이 위치에 귀환 표식 남기기</strong>
+          <span>{Math.round(selectedCoordinates.x)}, {Math.round(selectedCoordinates.y)} 지점</span>
+        </button>
+      ) : (
+        <p className="muted">지도 위의 드러난 지점이나 빈 양피지 위치를 누르면 기록 행동이 표시된다.</p>
+      )}
     </article>
   );
 }

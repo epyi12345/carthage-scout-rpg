@@ -9,7 +9,7 @@ import { LogPanel } from '../components/LogPanel';
 import { MapView } from '../components/MapView';
 import { TopStatusBar } from '../components/TopStatusBar';
 import { getEncounter } from '../game/encounter';
-import { applyChoice, markRouteTile, movePlayer, newGame, observeTile, recordTile, rest, returnToCamp } from '../game/engine';
+import { applyChoice, markRouteTile, movePlayer, newGame, observeTile, placePlayerMarker, recordTile, rest, returnToCamp } from '../game/engine';
 import { directionLabel, getNeighbors } from '../game/map';
 import { saveGame } from '../game/save';
 import type { EncounterChoice, GameState, TabId } from '../game/types';
@@ -37,6 +37,7 @@ export function GameScreen({ state, setState, onTitle }: Props) {
     onObserveTile: (tileId: string) => updateState(observeTile(state, tileId)),
     onRecordTile: (tileId: string) => updateState(recordTile(state, tileId)),
     onMarkRouteTile: (tileId: string) => updateState(markRouteTile(state, tileId)),
+    onPlaceMarker: (x: number, y: number) => updateState(placePlayerMarker(state, x, y)),
   };
 
   let content = null;
@@ -61,7 +62,7 @@ export function GameScreen({ state, setState, onTitle }: Props) {
   );
 }
 
-function ActionPanel({ state, neighbors, selectedTileId, onSelectTile, onMove, onObserve, onRecord, onRest, onReturn, onObserveTile, onRecordTile, onMarkRouteTile }: {
+function ActionPanel({ state, neighbors, selectedTileId, onSelectTile, onMove, onObserve, onRecord, onRest, onReturn, onObserveTile, onRecordTile, onMarkRouteTile, onPlaceMarker }: {
   state: GameState;
   neighbors: ReturnType<typeof getNeighbors>;
   selectedTileId: string;
@@ -74,11 +75,12 @@ function ActionPanel({ state, neighbors, selectedTileId, onSelectTile, onMove, o
   onObserveTile: (tileId: string) => void;
   onRecordTile: (tileId: string) => void;
   onMarkRouteTile: (tileId: string) => void;
+  onPlaceMarker: (x: number, y: number) => void;
 }) {
   const recordableTiles = state.playerMap.filter((tile) => tile.state !== 'unknown' && tile.state !== 'recorded' && tile.state !== 'route_connected');
   return (
     <>
-      <MapView state={state} selectedTileId={selectedTileId} onSelectTile={onSelectTile} onObserveTile={onObserveTile} onRecordTile={onRecordTile} onMarkRouteTile={onMarkRouteTile} />
+      <MapView state={state} selectedTileId={selectedTileId} onSelectTile={onSelectTile} onObserveTile={onObserveTile} onRecordTile={onRecordTile} onMarkRouteTile={onMarkRouteTile} onPlaceMarker={onPlaceMarker} />
       <section className="panel story-panel action-panel">
         <p className="eyebrow">MVP 정찰 루프</p>
         <h1>알프스 정찰</h1>
