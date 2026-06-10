@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BaseMapLayer } from './BaseMapLayer';
+import { BASE_MAP_IMAGE_SRC, BaseMapLayer } from './BaseMapLayer';
 import { FogOfWarLayer } from './FogOfWarLayer';
 import { MapHandle } from './MapHandle';
 import { MapLegend } from './MapLegend';
@@ -20,6 +20,8 @@ interface Props {
 
 export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: Props) {
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ x: number; y: number } | null>(null);
+  const [mapLoadStatus, setMapLoadStatus] = useState('Map image loading');
+  const [showFog, setShowFog] = useState(false);
   const selectedPoint = state.parchmentSystemMap.points.find((point) => point.id === selectedTileId);
 
   const handleMapClick = (event: { currentTarget: HTMLDivElement; clientX: number; clientY: number }) => {
@@ -40,10 +42,16 @@ export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: 
         <span>{state.parchmentSystemMap.baseMapId}</span>
       </div>
       <p className="muted">검은 안개 아래에는 실제 시스템 지도가 숨겨져 있다. 현재 드러난 범위 안의 지점과 직접 남긴 표식만 믿을 수 있다.</p>
+      <div className="map-runtime-debug" aria-live="polite">
+        <span>resolved map image path:</span>
+        <code>{BASE_MAP_IMAGE_SRC}</code>
+        <strong className={mapLoadStatus === 'Map image loaded' ? 'map-load-ok' : mapLoadStatus === 'Map image failed to load' ? 'map-load-error' : ''}>{mapLoadStatus}</strong>
+        <button className={showFog ? 'active' : ''} onClick={() => setShowFog((value) => !value)}>{showFog ? '안개 숨기기' : '안개 보기'}</button>
+      </div>
       <div className="parchment-map-frame">
         <MapHandle />
         <div className="parchment-map-surface" onClick={handleMapClick} role="button" tabIndex={0} aria-label="양피지 지도. 빈 지점을 눌러 수동 표식을 준비한다.">
-          <BaseMapLayer systemMap={state.parchmentSystemMap} />
+          <BaseMapLayer systemMap={state.parchmentSystemMap} onLoad={() => setMapLoadStatus('Map image loaded')} onError={() => setMapLoadStatus('Map image failed to load')} />
           <VisiblePointLayer
             points={state.parchmentSystemMap.points}
             playerMap={state.parchmentPlayerMap}
@@ -54,7 +62,7 @@ export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: 
             }}
           />
           <PlayerMarkerLayer markers={state.parchmentPlayerMap.placedMarkers} />
-          <FogOfWarLayer revealedAreas={state.parchmentPlayerMap.revealedAreas} />
+          {showFog && <FogOfWarLayer revealedAreas={state.parchmentPlayerMap.revealedAreas} />}
         </div>
       </div>
       <MapLegend />
