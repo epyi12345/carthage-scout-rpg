@@ -54,11 +54,6 @@ export function App() {
 
   return (
     <div className={`app-root theme-${theme}`}>
-      {screen === 'game' && (
-        <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-          {theme === 'dark' ? 'Light' : 'Dark'}
-        </button>
-      )}
       {content}
       {showSplash && !isMapTestPage && <SplashScreen onComplete={() => setShowSplash(false)} />}
     </div>
