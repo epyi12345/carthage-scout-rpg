@@ -12,9 +12,9 @@ The current lightweight implementation keeps the older 7x7 movement model availa
 - Asset: `public/assets/maps/map_base_alpine_terrain_v0.png`
 - Runtime path: `${import.meta.env.BASE_URL}assets/maps/map_base_alpine_terrain_v0.png`
 - Owner layer: `BaseMapLayer`
-- Visual test route: `#/map-test`
+- Visual test route: `#/map-test` (also supports `?map-test` and `/map-test` where the host rewrites to the Vite app)
 
-System points, fog of war, player markers, route lines, and debug overlays must remain separate layers above this base image.
+System points, fog of war, player markers, route lines, and debug overlays must remain separate layers above this base image. The map test page shows the resolved `mapSrc`, a visible load status (`Map image loaded` / `Map image failed to load`), and a direct `<img>` preview before any optional overlay toggles.
 
 ## System map vs player map
 

@@ -32,7 +32,7 @@ export function App() {
     setScreen('game');
   };
 
-  const isMapTestPage = window.location.hash === '#/map-test' || new URLSearchParams(window.location.search).has('map-test');
+  const isMapTestPage = window.location.hash === '#/map-test' || window.location.pathname.endsWith('/map-test') || new URLSearchParams(window.location.search).has('map-test');
   const content = isMapTestPage
     ? <MapLayerTest />
     : screen === 'title'

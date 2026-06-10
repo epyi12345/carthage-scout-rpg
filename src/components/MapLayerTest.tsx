@@ -12,6 +12,7 @@ export function MapLayerTest() {
   const [showPoints, setShowPoints] = useState(false);
   const [showFog, setShowFog] = useState(false);
   const [showMarker, setShowMarker] = useState(false);
+  const [loadStatus, setLoadStatus] = useState('Map image loading');
 
   return (
     <main className="map-test-page" aria-label="지도 레이어 테스트 페이지">
@@ -23,6 +24,22 @@ export function MapLayerTest() {
           이미지가 잘리지 않고 전체 비율을 유지하는지 확인하기 위한 테스트 화면이다.
         </p>
 
+        <div className="map-test-debug-card" aria-live="polite">
+          <span>resolved mapSrc:</span>
+          <code>{BASE_MAP_SRC}</code>
+          <strong className={loadStatus === 'Map image loaded' ? 'map-load-ok' : loadStatus === 'Map image failed to load' ? 'map-load-error' : ''}>{loadStatus}</strong>
+        </div>
+
+        <div className="map-test-direct-preview">
+          <img
+            className="map-test-direct-image"
+            src={BASE_MAP_SRC}
+            alt="Carthage Scout RPG alpine terrain base map direct preview"
+            onLoad={() => setLoadStatus('Map image loaded')}
+            onError={() => setLoadStatus('Map image failed to load')}
+          />
+        </div>
+
         <div className="map-test-controls" aria-label="지도 테스트 토글">
           <button className={showPoints ? 'active' : ''} onClick={() => setShowPoints((value) => !value)}>sample points</button>
           <button className={showFog ? 'active' : ''} onClick={() => setShowFog((value) => !value)}>sample fog</button>
@@ -32,7 +49,13 @@ export function MapLayerTest() {
         <div className="parchment-map-frame map-test-frame">
           <div className="map-handle" aria-hidden="true"><span /></div>
           <div className="map-test-surface">
-            <img className="map-test-base-image" src={BASE_MAP_SRC} alt="Carthage Scout RPG alpine terrain base map" />
+            <img
+              className="map-test-base-image"
+              src={BASE_MAP_SRC}
+              alt="Carthage Scout RPG alpine terrain base map framed preview"
+              onLoad={() => setLoadStatus('Map image loaded')}
+              onError={() => setLoadStatus('Map image failed to load')}
+            />
             {showPoints && (
               <div className="map-test-overlay" aria-label="샘플 시스템 포인트">
                 {samplePoints.map((point) => (

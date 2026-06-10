@@ -499,3 +499,37 @@ h2 { margin: 0; font-size: 1rem; color: #f9d58d; }.eyebrow { margin: 0 0 .5rem; 
 .map-test-marker { position: absolute; z-index: 4; }
 .map-test-notes { display: grid; gap: .35rem; margin-top: .8rem; color: #cbd8d5; font-size: .78rem; }
 .map-test-notes code, .map-test-panel code { color: #ffe4a7; }
+.map-test-debug-card {
+  display: grid;
+  gap: .32rem;
+  margin: .85rem 0;
+  padding: .7rem;
+  border: 1px solid rgba(217,181,108,.28);
+  border-radius: 14px;
+  background: rgba(0,0,0,.22);
+  color: #d8e3df;
+  overflow-wrap: anywhere;
+}
+.map-test-debug-card strong { color: #f2d18a; }
+.map-test-debug-card .map-load-ok { color: #9bd08f; }
+.map-test-debug-card .map-load-error { color: #ff9b8f; }
+.map-test-direct-preview {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  margin: .85rem auto;
+  padding: .5rem;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  background: rgba(0,0,0,.24);
+}
+.map-test-direct-image {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  opacity: 1;
+  visibility: visible;
+}
