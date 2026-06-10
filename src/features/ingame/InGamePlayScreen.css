@@ -1,0 +1,51 @@
+.ingame-play-screen {
+  position: relative;
+  width: min(100vw, 430px);
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #caa86e;
+  background-image: var(--ingame-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+
+.ingame-vignette-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ingame-top-ornament-wrap {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  z-index: 5;
+  width: min(82vw, 360px);
+  height: 64px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.ingame-top-ornament {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  width: 48px;
+  height: min(82vw, 360px);
+  object-fit: contain;
+  opacity: 1;
+  pointer-events: none;
+  user-select: none;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+}
