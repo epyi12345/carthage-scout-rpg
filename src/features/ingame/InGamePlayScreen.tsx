@@ -14,12 +14,14 @@ export function InGamePlayScreen() {
         alt=""
         draggable={false}
       />
-      <img
-        className="ingame-top-ornament"
-        src={ingameUiAssets.topOrnamentSource}
-        alt=""
-        draggable={false}
-      />
+      <div className="ingame-top-ornament-wrap" aria-hidden="true">
+        <img
+          className="ingame-top-ornament"
+          src={ingameUiAssets.topOrnamentSource}
+          alt=""
+          draggable={false}
+        />
+      </div>
     </main>
   );
 }
