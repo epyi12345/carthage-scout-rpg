@@ -3,6 +3,7 @@ import { newGame } from './game/engine';
 import { hasSave, loadGame, saveGame } from './game/save';
 import type { GameState } from './game/types';
 import { GameScreen } from './screens/GameScreen';
+import { MapLayerTest } from './components/MapLayerTest';
 import { SplashScreen } from './components/SplashScreen';
 import { TitleScreen } from './screens/TitleScreen';
 
@@ -31,9 +32,12 @@ export function App() {
     setScreen('game');
   };
 
-  const content = screen === 'title'
-    ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} themeLabel={theme === 'dark' ? '밝은' : '어두운'} />
-    : <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
+  const isMapTestPage = window.location.hash === '#/map-test' || new URLSearchParams(window.location.search).has('map-test');
+  const content = isMapTestPage
+    ? <MapLayerTest />
+    : screen === 'title'
+      ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} themeLabel={theme === 'dark' ? '밝은' : '어두운'} />
+      : <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
 
   return (
     <div className={`app-root theme-${theme}`}>
@@ -43,7 +47,7 @@ export function App() {
         </button>
       )}
       {content}
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {showSplash && !isMapTestPage && <SplashScreen onComplete={() => setShowSplash(false)} />}
     </div>
   );
 }

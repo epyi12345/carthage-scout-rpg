@@ -1,7 +1,13 @@
 # Map assets
 
-The parchment map UI can use a fixed base terrain image at:
+The current in-game base terrain map asset is:
 
-`public/assets/maps/map_base_alpine_parchment.jpg`
+`public/assets/maps/map_base_alpine_terrain_v0.png`
 
-The current MVP keeps a CSS parchment fallback so the build remains valid while the final base map image is under design review.
+Runtime path used by Vite/GitHub Pages:
+
+`${import.meta.env.BASE_URL}assets/maps/map_base_alpine_terrain_v0.png`
+
+This image belongs to `BaseMapLayer`. System points, fog of war, player markers, route lines, and other gameplay overlays should remain separate layers above this base image.
+
+Open the visual test page at `#/map-test` to confirm the image alignment inside the mobile parchment frame.

@@ -1,6 +1,6 @@
 import type { SystemMap } from '../game/types';
 
-const BASE_MAP_IMAGE_SRC = `${import.meta.env.BASE_URL}assets/maps/map_base_alpine_parchment.jpg`;
+const BASE_MAP_IMAGE_SRC = `${import.meta.env.BASE_URL}assets/maps/map_base_alpine_terrain_v0.png`;
 
 export function BaseMapLayer({ systemMap }: { systemMap: SystemMap }) {
   return (

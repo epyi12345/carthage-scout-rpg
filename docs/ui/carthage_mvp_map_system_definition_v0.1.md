@@ -2,9 +2,19 @@
 
 ## Base map concept
 
-The MVP map is not a square tile-node board in the play-facing UI. It should feel like a parchment terrain map: a fixed Alpine base map image sits at the bottom, while algorithmically placed points of interest are scattered on top using the run seed.
+The MVP map is not a square tile-node board in the play-facing UI. It should feel like a parchment terrain map: the current fixed Alpine base map image, `public/assets/maps/map_base_alpine_terrain_v0.png`, sits at the bottom while algorithmically placed points of interest are scattered on top using the run seed.
 
 The current lightweight implementation keeps the older 7x7 movement model available for the prototype engine, but the visible map panel presents a parchment-style terrain map with points, fog of war, and player markers.
+
+
+## Current base terrain asset
+
+- Asset: `public/assets/maps/map_base_alpine_terrain_v0.png`
+- Runtime path: `${import.meta.env.BASE_URL}assets/maps/map_base_alpine_terrain_v0.png`
+- Owner layer: `BaseMapLayer`
+- Visual test route: `#/map-test`
+
+System points, fog of war, player markers, route lines, and debug overlays must remain separate layers above this base image.
 
 ## System map vs player map
 
@@ -63,7 +73,7 @@ Encounter density is influenced by point spacing. The generator records nearest-
 Suggested/current components:
 
 - `MapPanel` / `MapView`: overall panel and interaction shell.
-- `BaseMapLayer`: fixed parchment terrain image/fallback layer.
+- `BaseMapLayer`: fixed terrain image layer using `public/assets/maps/map_base_alpine_terrain_v0.png`.
 - `FogOfWarLayer`: black fog overlay with revealed holes.
 - `VisiblePointLayer`: discovered/visible seeded points.
 - `PlayerMarkerLayer`: manually placed player markers.
@@ -73,7 +83,7 @@ Suggested/current components:
 
 ## Uncertain design questions for review
 
-- What is the final base map asset filename? The implementation currently references `public/assets/maps/map_base_alpine_parchment.jpg` with CSS fallback if absent.
+- Confirm whether `map_base_alpine_terrain_v0.png` is the final crop/aspect ratio for the in-game parchment frame.
 - Should markers have multiple user-selectable types in MVP, or is a single return marker enough for the first playtest?
 - How large should reveal radii be for movement, high-ground observation, and special encounters?
 - Should discovered points remain visible after leaving the area, or should only markers and recorded points persist?
