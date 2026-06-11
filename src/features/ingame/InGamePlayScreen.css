@@ -50,31 +50,53 @@
   z-index: 4;
 }
 
-.ingame-top-ornament {
+.ingame-top-ornament-wrap {
   position: absolute;
   left: 3.0556%;
   top: 38.6207%;
-  width: 5.5556%;
-  height: 232.4138%;
+  width: 93.6111%;
+  height: 13.7931%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.ingame-top-ornament {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5.9347%;
+  height: 1685%;
   display: block;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
-  transform: rotate(90deg);
+  transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center;
+}
+
+.ingame-center-divider-wrap {
+  position: absolute;
+  left: 3.0556%;
+  top: 86.8966%;
+  width: 93.6111%;
+  height: 4.1379%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 4;
 }
 
 .ingame-center-divider {
   position: absolute;
-  left: 3.0556%;
-  top: 86.8966%;
-  width: 1.6667%;
-  height: 232.4138%;
+  left: 50%;
+  top: 50%;
+  width: 1.7804%;
+  height: 5616.6667%;
   display: block;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
-  transform: rotate(90deg);
+  transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center;
 }
 
@@ -139,16 +161,27 @@
   user-select: none;
 }
 
-.ingame-bottom-ornament {
+.ingame-bottom-ornament-wrap {
   position: absolute;
   left: 3.0556%;
   top: 55.4348%;
-  width: 5.5556%;
-  height: 366.3043%;
+  width: 93.6111%;
+  height: 21.7391%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.ingame-bottom-ornament {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5.9347%;
+  height: 1685%;
   display: block;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
-  transform: rotate(90deg);
+  transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center;
 }

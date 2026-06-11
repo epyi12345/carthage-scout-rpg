@@ -20,19 +20,23 @@ export function InGamePlayScreen() {
         />
 
         <header className="ingame-header" aria-hidden="true">
-          <img
-            className="ingame-top-ornament"
-            src={ingameUiAssets.topDividerLeftSource}
-            alt=""
-            draggable={false}
-          />
+          <div className="ingame-top-ornament-wrap">
+            <img
+              className="ingame-top-ornament"
+              src={ingameUiAssets.topDividerLeftSource}
+              alt=""
+              draggable={false}
+            />
+          </div>
 
-          <img
-            className="ingame-center-divider"
-            src={ingameUiAssets.centerDividerLine}
-            alt=""
-            draggable={false}
-          />
+          <div className="ingame-center-divider-wrap">
+            <img
+              className="ingame-center-divider"
+              src={ingameUiAssets.centerDividerLine}
+              alt=""
+              draggable={false}
+            />
+          </div>
 
           <img
             className="ingame-gear-icon"
@@ -59,12 +63,14 @@ export function InGamePlayScreen() {
             draggable={false}
           />
 
-          <img
-            className="ingame-bottom-ornament"
-            src={ingameUiAssets.bottomDividerRightSource}
-            alt=""
-            draggable={false}
-          />
+          <div className="ingame-bottom-ornament-wrap">
+            <img
+              className="ingame-bottom-ornament"
+              src={ingameUiAssets.bottomDividerRightSource}
+              alt=""
+              draggable={false}
+            />
+          </div>
         </footer>
       </section>
     </main>
