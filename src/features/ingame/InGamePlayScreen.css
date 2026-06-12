@@ -149,14 +149,15 @@
   z-index: 4;
 }
 
-.ingame-map-pull-handle {
+.footer-pull-handle {
   position: absolute;
   left: 6.1111%;
   top: 22.8261%;
   width: 87.5%;
   height: 23.913%;
   display: block;
-  object-fit: contain;
+  object-fit: fill;
+  z-index: 5;
   pointer-events: none;
   user-select: none;
 }

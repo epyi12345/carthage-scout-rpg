@@ -57,9 +57,10 @@ export function InGamePlayScreen() {
 
         <footer className="ingame-footer" aria-hidden="true">
           <img
-            className="ingame-map-pull-handle"
-            src={ingameUiAssets.mapPullHandleBar}
+            className="footer-pull-handle"
+            src="/assets/ui/ui_icon_15_map_pull_handle_bar_exact.png"
             alt=""
+            aria-hidden="true"
             draggable={false}
           />
 
