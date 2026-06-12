@@ -1,5 +1,80 @@
 [
   {
+    "id": "START_001",
+    "title": "장군의 호출",
+    "body": "막사 안은 아직 따뜻합니다.\n\n기름등이 낮게 흔들리고,\n젖은 망토에서는 가죽 냄새가 납니다.\n밖에서는 말들이 진흙을 긁는 소리가 들립니다.\n\n천막 입구가 열립니다.\n\n“정찰대장 셋. 장군께서 부르신다.”\n\n장교가 입구에 선 채 안쪽을 둘러봅니다.\n막사 안의 웃음소리가 멎습니다.",
+    "choices": [
+      {
+        "id": "stand_silently",
+        "text": "말없이 일어난다.",
+        "resultText": "당신은 말없이 자리에서 일어납니다.\n\n장교는 더 묻지 않고 천막 밖으로 몸을 돌립니다.\n당신은 그 뒤를 따라 나갑니다.",
+        "effects": {},
+        "nextEncounterId": "START_002"
+      },
+      {
+        "id": "take_cloak",
+        "text": "망토를 걸치고 따라간다.",
+        "resultText": "당신은 걸어둔 망토를 집어 어깨에 걸칩니다.\n\n젖은 가죽이 목덜미에 닿습니다.\n장교가 먼저 나가고, 당신은 그 뒤를 따라갑니다.",
+        "effects": {},
+        "nextEncounterId": "START_002"
+      },
+      {
+        "id": "look_at_scouts",
+        "text": "동료들의 얼굴을 한 번 둘러본다.",
+        "resultText": "당신은 막사 안의 얼굴들을 한 차례 둘러봅니다.\n\n누군가는 시선을 피하고,\n누군가는 웃다 만 얼굴로 당신을 봅니다.\n\n당신은 말없이 일어나 장교를 따라 나갑니다.",
+        "effects": {
+          "addFlags": [
+            "looked_at_scouts_before_mission"
+          ]
+        },
+        "nextEncounterId": "START_002"
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "realistic"
+  },
+  {
+    "id": "START_002",
+    "title": "한니발의 천막",
+    "body": "한니발의 천막 안에는 작은 화로가 놓여 있습니다.\n\n탁자 위에는 지도가 펼쳐져 있습니다.\n\n[이미지 영역]\n정찰대장 셋이 장군의 지시를 받고 있는 장면.\n탁자 위에는 알프스 지도가 펼쳐져 있고, 작은 화로가 천막 안을 비춥니다.\n[/이미지 영역]\n\n강, 산맥, 부족의 마을, 로마군의 예상 경로가 표시되어 있습니다.\n\n당신 외에도 두 명의 정찰대장이 와 있습니다.\n\n한니발의 손가락이 알프스 쪽을 짚습니다.\n\n“로마는 우리가 평지를 따라 움직일 거라고 믿고 있다.”\n\n화로 안의 젖은 장작이 작게 튑니다.\n\n“우리는 그 믿음을 이용한다.”",
+    "imagePlaceholder": "정찰대장 셋이 장군의 지시를 받고 있는 장면.\n탁자 위에는 알프스 지도가 펼쳐져 있고, 작은 화로가 천막 안을 비춥니다.",
+    "choices": [
+      {
+        "id": "focus_mountains",
+        "text": "산맥 표시를 확인한다.",
+        "effects": {
+          "addFlags": [
+            "focused_on_mountains"
+          ]
+        },
+        "nextEncounterId": "START_003"
+      },
+      {
+        "id": "wait_hannibal",
+        "text": "한니발의 다음 말을 기다린다.",
+        "effects": {},
+        "nextEncounterId": "START_003"
+      },
+      {
+        "id": "watch_other_captains",
+        "text": "다른 정찰대장들의 반응을 본다.",
+        "effects": {
+          "addFlags": [
+            "watched_other_captains"
+          ]
+        },
+        "nextEncounterId": "START_003"
+      }
+    ],
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "realistic",
+    "followUps": [
+      "START_003"
+    ]
+  },
+  {
     "id": "ENC_TUT_001_AWAKE",
     "title": "눈 속에서 깨어남",
     "body": "눈 속이다.\n\n몸이 움직이지 않는다.\n손끝의 감각은 사라졌고,\n입가에는 얼어붙은 피가 엉겨 붙어 있다.\n\n그런데 이상하게도 춥지 않다.\n오히려 따뜻하다.\n\n이대로 눈을 감으면,\n아주 편해질 것 같다.",

@@ -402,6 +402,7 @@ export interface EncounterChoice {
   effects?: EncounterEffects;
   consequences?: EncounterEffects;
   logMessage?: string;
+  resultText?: string;
   nextEncounterId?: string | null;
 }
 
@@ -416,6 +417,7 @@ export interface Encounter {
   tone?: EncounterTone;
   description?: string;
   body: string;
+  imagePlaceholder?: string;
   trigger?: EncounterTrigger;
   duration?: EncounterDuration;
   conditions?: EncounterConditions;

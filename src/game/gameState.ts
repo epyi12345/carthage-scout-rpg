@@ -100,7 +100,7 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
     parchmentPlayerMap,
     player: playerState,
     actionCount: 0,
-    currentEncounterId: null,
+    currentEncounterId: 'START_001',
     resolvedEncounterIds: [],
     lastLog: log,
     ending: null,
