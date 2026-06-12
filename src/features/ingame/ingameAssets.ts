@@ -10,6 +10,5 @@ export const ingameUiAssets = {
   topDividerLeftSource: assetUrl('assets/panel_cells/ui_icon_10_divider_tall_left.png'),
   centerDividerLine: assetUrl('assets/ui/ui_icon_11_divider_center_line.png'),
 
-  mapPullHandleBar: assetUrl('assets/ui/ui_icon_15_map_pull_handle_bar_exact.png'),
   bottomDividerRightSource: assetUrl('assets/panel_cells/ui_icon_12_divider_tall_right.png'),
 };
