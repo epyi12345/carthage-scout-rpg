@@ -21,6 +21,8 @@ function splitImagePlaceholder(body: string, fallbackPlaceholder?: string) {
   return { before, placeholder: fallbackPlaceholder ?? placeholder.trim(), after };
 }
 
+const headerMarkerLefts = [100, 127, 154];
+
 function renderParagraphs(text: string) {
   return text
     .split(/\n\s*\n/)
@@ -82,15 +84,30 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </div>
 
+          {/* TODO: Replace with the final portrait or portrait-frame asset when it is confirmed. */}
+          <div className="ingame-header-portrait" />
+
+          {/* TODO: Replace with ui_icon_06_capsule_frame_wide when that asset is available. */}
+          <div className="ingame-header-capsule" />
+
+          {/* TODO: Replace decorative markers with the confirmed header marker asset. */}
+          {headerMarkerLefts.map((left) => (
+            <div
+              className="ingame-header-marker"
+              key={left}
+              style={{ '--marker-left': `${(left / 360) * 100}%` }}
+            />
+          ))}
+
           <img
-            className="ingame-gear-icon"
+            className="ingame-header-small-status"
             src={ingameUiAssets.gearIcon}
             alt=""
             draggable={false}
           />
 
           <img
-            className="ingame-small-toggle"
+            className="ingame-header-toggle"
             src={ingameUiAssets.smallToggleHorizontal}
             alt=""
             draggable={false}

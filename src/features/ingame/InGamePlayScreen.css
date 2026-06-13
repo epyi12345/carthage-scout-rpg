@@ -100,7 +100,54 @@
   transform-origin: center;
 }
 
-.ingame-gear-icon {
+.ingame-header-portrait {
+  position: absolute;
+  left: 3.0556%;
+  top: 51.0345%;
+  width: 15.2778%;
+  height: 48.9655%;
+  border: 1px solid rgba(45, 27, 14, 0.45);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(52, 35, 24, 0.74) 0 18%, transparent 19%),
+    linear-gradient(180deg, rgba(97, 66, 36, 0.36), rgba(34, 21, 12, 0.28));
+  box-shadow: inset 0 0 12px rgba(38, 22, 12, 0.28);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.ingame-header-capsule {
+  position: absolute;
+  left: 22.7778%;
+  top: 51.0345%;
+  width: 5%;
+  height: 37.2414%;
+  border: 1px solid rgba(45, 27, 14, 0.5);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(68, 42, 21, 0.24), rgba(255, 235, 184, 0.16));
+  box-shadow: inset 0 0 10px rgba(41, 24, 12, 0.24);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.ingame-header-marker {
+  position: absolute;
+  left: var(--marker-left);
+  top: 53.1034%;
+  width: 6.6667%;
+  height: 18.6207%;
+  border: 1px solid rgba(45, 27, 14, 0.48);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(58, 36, 18, 0.2), rgba(255, 235, 184, 0.28));
+  box-shadow: inset 0 0 8px rgba(38, 22, 12, 0.22);
+  pointer-events: none;
+  user-select: none;
+  transform: rotate(90deg);
+  transform-origin: center;
+  z-index: 5;
+}
+
+.ingame-header-small-status {
   position: absolute;
   left: 89.1667%;
   top: 52.4138%;
@@ -110,12 +157,13 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
+  z-index: 5;
 }
 
-.ingame-small-toggle {
+.ingame-header-toggle {
   position: absolute;
-  left: 88.4722%;
-  top: 73.1034%;
+  left: 90.2778%;
+  top: 68.2759%;
   width: 7.5%;
   height: 9.6552%;
   display: block;
@@ -124,6 +172,7 @@
   user-select: none;
   transform: rotate(90deg);
   transform-origin: center;
+  z-index: 5;
 }
 
 .ingame-text-scroll {
