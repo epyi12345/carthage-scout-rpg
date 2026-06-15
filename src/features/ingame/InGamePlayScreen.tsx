@@ -84,17 +84,27 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </div>
 
-          {/* TODO: Replace with the final portrait or portrait-frame asset when it is confirmed. */}
-          <div className="ingame-header-portrait" />
+          <img
+            className="ingame-header-portrait"
+            src={ingameUiAssets.scrollPortrait}
+            alt=""
+            draggable={false}
+          />
 
-          {/* TODO: Replace with ui_icon_06_capsule_frame_wide when that asset is available. */}
-          <div className="ingame-header-capsule" />
+          <img
+            className="ingame-header-capsule"
+            src={ingameUiAssets.capsuleFrameWide}
+            alt=""
+            draggable={false}
+          />
 
-          {/* TODO: Replace decorative markers with the confirmed header marker asset. */}
           {headerMarkerLefts.map((left) => (
-            <div
+            <img
               className="ingame-header-marker"
               key={left}
+              src={ingameUiAssets.capsuleFrameThin}
+              alt=""
+              draggable={false}
               style={{ '--marker-left': `${(left / 360) * 100}%` }}
             />
           ))}

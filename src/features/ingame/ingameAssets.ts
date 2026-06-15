@@ -6,6 +6,10 @@ export const ingameUiAssets = {
 
   gearIcon: assetUrl('assets/panel_cells/ui_icon_01_gear_like.png'),
   smallToggleHorizontal: assetUrl('assets/panel_cells/ui_icon_02_small_toggle_horizontal.png'),
+  heartLike: assetUrl('assets/panel_cells/ui_icon_03_heart_like.png'),
+  scrollPortrait: assetUrl('assets/panel_cells/ui_icon_05_scroll_portrait.png'),
+  capsuleFrameWide: assetUrl('assets/panel_cells/ui_icon_06_capsule_frame_wide.png'),
+  capsuleFrameThin: assetUrl('assets/panel_cells/ui_icon_07_capsule_frame_thin.png'),
 
   topDividerLeftSource: assetUrl('assets/panel_cells/ui_icon_10_divider_tall_left.png'),
   centerDividerLine: assetUrl('assets/ui/ui_icon_11_divider_center_line.png'),
