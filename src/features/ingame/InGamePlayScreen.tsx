@@ -21,7 +21,7 @@ function splitImagePlaceholder(body: string, fallbackPlaceholder?: string) {
   return { before, placeholder: fallbackPlaceholder ?? placeholder.trim(), after };
 }
 
-const headerMarkerLefts = [100, 127, 154];
+const headerHeartLefts = [100, 127, 154];
 
 function renderParagraphs(text: string) {
   return text
@@ -92,25 +92,25 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           />
 
           <img
-            className="ingame-header-capsule"
+            className="ingame-header-status-bar"
             src={ingameUiAssets.capsuleFrameWide}
             alt=""
             draggable={false}
           />
 
-          {headerMarkerLefts.map((left) => (
+          {headerHeartLefts.map((left) => (
             <img
-              className="ingame-header-marker"
+              className="ingame-header-heart"
               key={left}
-              src={ingameUiAssets.capsuleFrameThin}
+              src={ingameUiAssets.heartLike}
               alt=""
               draggable={false}
-              style={{ '--marker-left': `${(left / 360) * 100}%` }}
+              style={{ '--heart-left': `${(left / 360) * 100}%` }}
             />
           ))}
 
           <img
-            className="ingame-header-small-status"
+            className="ingame-header-achievement"
             src={ingameUiAssets.gearIcon}
             alt=""
             draggable={false}

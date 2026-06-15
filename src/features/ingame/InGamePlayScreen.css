@@ -108,15 +108,13 @@
   height: 48.9655%;
   display: block;
   object-fit: contain;
-  transform: rotate(90deg);
-  transform-origin: center;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
   z-index: 5;
 }
 
-.ingame-header-capsule {
+.ingame-header-status-bar {
   position: absolute;
   left: 22.7778%;
   top: 51.0345%;
@@ -130,9 +128,9 @@
   z-index: 5;
 }
 
-.ingame-header-marker {
+.ingame-header-heart {
   position: absolute;
-  left: var(--marker-left);
+  left: var(--heart-left);
   top: 53.1034%;
   width: 6.6667%;
   height: 18.6207%;
@@ -146,9 +144,9 @@
   z-index: 5;
 }
 
-.ingame-header-small-status {
+.ingame-header-achievement {
   position: absolute;
-  left: 89.1667%;
+  right: 6.1111%;
   top: 52.4138%;
   width: 6.1111%;
   height: 15.1724%;
