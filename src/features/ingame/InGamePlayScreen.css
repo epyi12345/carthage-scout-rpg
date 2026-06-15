@@ -1,4 +1,6 @@
 .ingame-play-screen {
+  --ui-scale: min(calc(100vw / 360px), calc(100dvh / 800px));
+
   width: 100vw;
   height: 100dvh;
   display: flex;
@@ -10,9 +12,12 @@
 
 .ingame-stage {
   position: relative;
-  width: min(100vw, calc(100dvh * 0.45));
-  aspect-ratio: 360 / 800;
+  width: 360px;
+  height: 800px;
+  flex: 0 0 auto;
   overflow: hidden;
+  transform: scale(var(--ui-scale));
+  transform-origin: center center;
 }
 
 .ingame-background {
@@ -41,136 +46,109 @@
 
 .ingame-header {
   position: absolute;
-  left: 0%;
-  top: 0%;
-  width: 100%;
-  height: 18.125%;
+  left: 0;
+  top: 0;
+  width: 360px;
+  height: 145px;
   border-radius: 2px;
   pointer-events: none;
   z-index: 4;
 }
 
+.ingame-header img {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 .ingame-top-ornament-wrap {
   position: absolute;
-  left: 3.0556%;
-  top: 38.6207%;
-  width: 93.6111%;
-  height: 13.7931%;
+  left: 11px;
+  top: 56px;
+  width: 337px;
+  height: 20px;
   overflow: visible;
   pointer-events: none;
   z-index: 4;
 }
 
 .ingame-top-ornament {
-  position: absolute;
   left: 50%;
   top: 50%;
-  width: 5.9347%;
-  height: 1685%;
-  display: block;
+  width: 20px;
+  height: 337px;
   object-fit: fill;
-  pointer-events: none;
-  user-select: none;
   transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center;
+  transform-origin: center center;
 }
 
 .ingame-center-divider-wrap {
   position: absolute;
-  left: 3.0556%;
-  top: 86.8966%;
-  width: 93.6111%;
-  height: 4.1379%;
+  left: 11px;
+  top: 126px;
+  width: 337px;
+  height: 6px;
   overflow: visible;
   pointer-events: none;
   z-index: 4;
 }
 
 .ingame-center-divider {
-  position: absolute;
   left: 50%;
   top: 50%;
-  width: 1.7804%;
-  height: 5616.6667%;
-  display: block;
+  width: 6px;
+  height: 337px;
   object-fit: fill;
-  pointer-events: none;
-  user-select: none;
   transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center;
+  transform-origin: center center;
 }
 
 .ingame-header-portrait {
-  position: absolute;
-  left: 3.0556%;
-  top: 51.0345%;
-  width: 15.2778%;
-  height: 48.9655%;
-  display: block;
-  object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
+  left: 11px;
+  top: 74px;
+  width: 55px;
+  height: 71px;
+  transform: rotate(90deg);
+  transform-origin: center center;
   z-index: 5;
 }
 
 .ingame-header-status-bar {
-  position: absolute;
-  left: 22.7778%;
-  top: 51.0345%;
-  width: 5%;
-  height: 37.2414%;
-  display: block;
-  object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
+  left: 82px;
+  top: 74px;
+  width: 18px;
+  height: 54px;
   z-index: 5;
 }
 
 .ingame-header-heart {
-  position: absolute;
   left: var(--heart-left);
-  top: 53.1034%;
-  width: 6.6667%;
-  height: 18.6207%;
-  display: block;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
+  top: 77px;
+  width: 24px;
+  height: 27px;
   transform: rotate(90deg);
-  transform-origin: center;
+  transform-origin: center center;
   z-index: 5;
 }
 
 .ingame-header-achievement {
-  position: absolute;
-  right: 6.1111%;
-  top: 52.4138%;
-  width: 6.1111%;
-  height: 15.1724%;
-  display: block;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
+  left: 321px;
+  top: 76px;
+  width: 22px;
+  height: 22px;
   z-index: 5;
 }
 
 .ingame-header-toggle {
-  position: absolute;
-  left: 90.2778%;
-  top: 68.2759%;
-  width: 7.5%;
-  height: 9.6552%;
-  display: block;
-  object-fit: contain;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
+  left: 325px;
+  top: 99px;
+  width: 27px;
+  height: 14px;
   transform: rotate(90deg);
-  transform-origin: center;
+  transform-origin: center center;
   z-index: 5;
 }
 

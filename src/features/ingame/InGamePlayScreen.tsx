@@ -105,7 +105,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
               src={ingameUiAssets.heartLike}
               alt=""
               draggable={false}
-              style={{ '--heart-left': `${(left / 360) * 100}%` }}
+              style={{ '--heart-left': `${left}px` }}
             />
           ))}
 
