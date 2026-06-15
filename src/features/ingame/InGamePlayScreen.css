@@ -156,8 +156,8 @@
 
 .ingame-header-achievement-slot-wrap {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: -12px;
+  top: 8px;
   width: 68px;
   height: 47px;
   overflow: visible;
