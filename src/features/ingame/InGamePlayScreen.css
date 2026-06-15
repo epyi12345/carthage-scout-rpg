@@ -1,0 +1,333 @@
+.ingame-play-screen {
+  --ui-scale: min(calc(100vw / 360px), calc(100dvh / 800px));
+
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #102326;
+}
+
+.ingame-stage {
+  position: relative;
+  width: 360px;
+  height: 800px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transform: scale(var(--ui-scale));
+  transform-origin: center center;
+}
+
+.ingame-background {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.ingame-vignette {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+  z-index: 10;
+}
+
+.ingame-header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 360px;
+  height: 145px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.ingame-header img {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ingame-top-ornament-wrap {
+  position: absolute;
+  left: 11px;
+  top: 56px;
+  width: 337px;
+  height: 20px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ingame-top-ornament {
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 337px;
+  object-fit: fill;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center center;
+}
+
+.ingame-center-divider-wrap {
+  position: absolute;
+  left: 11px;
+  top: 126px;
+  width: 337px;
+  height: 6px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ingame-center-divider {
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 337px;
+  object-fit: fill;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center center;
+}
+
+.ingame-header-portrait-wrap {
+  position: absolute;
+  left: 11px;
+  top: 74px;
+  width: 71px;
+  height: 55px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ingame-header-portrait {
+  left: 8px;
+  top: -8px;
+  width: 55px;
+  height: 71px;
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.ingame-header-status-bar {
+  left: 82px;
+  top: 74px;
+  width: 18px;
+  height: 54px;
+  z-index: 2;
+}
+
+.ingame-header-heart {
+  left: var(--heart-left);
+  top: 77px;
+  width: 24px;
+  height: 27px;
+  transform: rotate(90deg);
+  transform-origin: center center;
+  z-index: 2;
+}
+
+.ingame-header-right-icons {
+  position: absolute;
+  left: 245px;
+  top: 76px;
+  width: 107px;
+  height: 47px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ingame-header-achievement-slot-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 68px;
+  height: 47px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ingame-header-achievement-slot {
+  left: 11px;
+  top: -11px;
+  width: 47px;
+  height: 68px;
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.ingame-header-gear {
+  left: 76px;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  z-index: 3;
+}
+
+.ingame-header-toggle {
+  left: 80px;
+  top: 23px;
+  width: 27px;
+  height: 14px;
+  transform: rotate(90deg);
+  transform-origin: center center;
+  z-index: 3;
+}
+
+.ingame-text-scroll {
+  position: absolute;
+  left: 0%;
+  top: 18.125%;
+  width: 100%;
+  height: 70.375%;
+  overflow-y: auto;
+  border-radius: 2px;
+  scrollbar-width: thin;
+  z-index: 3;
+}
+
+.ingame-footer {
+  position: absolute;
+  left: 0%;
+  top: 88.5%;
+  width: 100%;
+  height: 11.5%;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.footer-map-handle {
+  position: absolute;
+  left: 7.5%;
+  top: 29.3478%;
+  width: 84.7222%;
+  height: 10.8696%;
+  display: block;
+  object-fit: fill;
+  z-index: 5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ingame-bottom-ornament-wrap {
+  position: absolute;
+  left: 3.0556%;
+  top: 55.4348%;
+  width: 93.6111%;
+  height: 21.7391%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.ingame-bottom-ornament {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5.9347%;
+  height: 1685%;
+  display: block;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+}
+
+.ingame-encounter-content {
+  min-height: 100%;
+  padding: 4.5% 10% 12%;
+  color: #26160d;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.65;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.35);
+}
+
+.ingame-encounter-id {
+  margin: 0 0 2%;
+  color: rgba(50, 28, 14, 0.62);
+  font-size: clamp(0.55rem, 2.2vw, 0.72rem);
+  letter-spacing: 0.12em;
+}
+
+.ingame-encounter-title {
+  margin: 0 0 7%;
+  color: #1f1209;
+  font-size: clamp(1.18rem, 5vw, 1.62rem);
+  line-height: 1.15;
+}
+
+.ingame-narrative-paragraph {
+  margin: 0 0 7%;
+  font-size: clamp(0.86rem, 3.55vw, 1.04rem);
+  white-space: normal;
+}
+
+.ingame-image-placeholder {
+  margin: 8% 0;
+  min-height: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7% 6%;
+  border: 1px solid rgba(61, 36, 19, 0.42);
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, rgba(52, 33, 18, 0.12), rgba(255, 239, 190, 0.16)),
+    rgba(83, 57, 30, 0.08);
+  box-shadow: inset 0 0 24px rgba(50, 29, 14, 0.18);
+}
+
+.ingame-image-placeholder .ingame-narrative-paragraph {
+  margin-bottom: 4%;
+  color: rgba(38, 22, 12, 0.78);
+  font-size: clamp(0.78rem, 3.15vw, 0.94rem);
+  text-align: center;
+}
+
+.ingame-choice-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 9%;
+}
+
+.ingame-choice-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(42, 25, 12, 0.52);
+  border-radius: 4px;
+  padding: 0.72rem 0.82rem;
+  background: rgba(42, 25, 12, 0.16);
+  color: #201208;
+  font: inherit;
+  font-size: clamp(0.82rem, 3.25vw, 0.98rem);
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 210, 0.22);
+}
+
+.ingame-choice-button:disabled {
+  opacity: 0.5;
+}
+
+.ingame-result-block {
+  margin-top: 4%;
+}

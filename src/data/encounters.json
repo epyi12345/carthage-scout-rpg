@@ -1,0 +1,171 @@
+[
+  {
+    "id": "enc_snowstorm_001",
+    "title": "눈보라",
+    "category": "weather",
+    "description": "시야가 짧아지고 표식이 눈에 묻힌다.",
+    "body": "눈보라가 능선을 덮는다. 움직이면 빠르지만 지도 판단은 흐려진다.",
+    "trigger": { "minRisk": 5 },
+    "conditions": {},
+    "choices": [
+      { "id": "wait", "text": "몸을 낮추고 기다린다", "consequences": { "warmthDelta": -8, "fatigueDelta": 4, "dayDelta": 1, "addFlag": "waited_out_snowstorm" }, "logMessage": "눈보라를 기다리며 체온을 잃었지만 길을 잘못 적지는 않았다." },
+      { "id": "push", "text": "눈보라 속에서 전진한다", "consequences": { "warmthDelta": -14, "fatigueDelta": 10, "corruptMapInfo": { "tileId": "current", "note": "눈보라 속 기록: 방향 불확실", "recordedRisk": 6 }, "addFlag": "rushed_in_snowstorm" }, "logMessage": "눈보라 속에서 움직여 기록 신뢰도가 떨어졌다." }
+    ]
+  },
+  {
+    "id": "enc_rockfall_001",
+    "title": "낙석",
+    "category": "threat",
+    "description": "돌이 굴러내려 길의 안전성을 시험한다.",
+    "body": "절벽 위에서 돌이 쏟아진다. 이 길은 군대에게 특히 위험하다.",
+    "trigger": { "terrainTypes": ["cliff", "ravine"], "minRisk": 7 },
+    "conditions": {},
+    "choices": [
+      { "id": "mark", "text": "낙석 위험을 표시한다", "consequences": { "fatigueDelta": 3, "markRisk": { "tileId": "current", "risk": 9, "note": "낙석 위험" }, "addFlag": "marked_rockfall" }, "logMessage": "낙석 위험을 지도에 남겼다." },
+      { "id": "dash", "text": "몸을 던져 빠져나간다", "consequences": { "healthDelta": -12, "fatigueDelta": 8, "addFlag": "escaped_rockfall_unmapped" }, "logMessage": "낙석은 피했지만 군대용 위험 표식은 남기지 못했다." }
+    ]
+  },
+  {
+    "id": "enc_frozen_ravine_001",
+    "title": "얼어붙은 협곡",
+    "category": "terrain",
+    "description": "정찰병은 건널 수 있으나 군대는 위험한 협곡이다.",
+    "body": "얼음 아래로 물소리가 들린다. 얇은 길이 반대편으로 이어진다.",
+    "trigger": { "terrainTypes": ["ravine", "frozen_pass"] },
+    "conditions": {},
+    "choices": [
+      { "id": "test", "text": "얼음을 시험하고 기록한다", "consequences": { "warmthDelta": -5, "fatigueDelta": 5, "markRisk": { "tileId": "current", "risk": 8, "note": "군대 통과 위험" }, "addFlag": "tested_frozen_ravine" }, "logMessage": "협곡의 얼음 상태를 확인해 위험도를 기록했다." },
+      { "id": "cross", "text": "혼자 건넌다", "consequences": { "healthDelta": -6, "warmthDelta": -8, "revealTile": { "tileId": "current", "state": "scouted" }, "addFlag": "crossed_scout_only_ravine" }, "logMessage": "혼자 건넜지만 군대가 건널 수 있는지는 불확실하다." }
+    ]
+  },
+  {
+    "id": "enc_abandoned_supplies_001",
+    "title": "버려진 보급품",
+    "category": "supply",
+    "description": "젖은 가죽 꾸러미에서 식량이나 보급 정보를 얻는다.",
+    "body": "바위 밑에 버려진 보급 꾸러미가 있다.",
+    "trigger": { "terrainTypes": ["abandoned_camp", "cave", "forest"] },
+    "conditions": {},
+    "choices": [
+      { "id": "take", "text": "먹을 수 있는 것을 챙긴다", "consequences": { "foodDelta": 2, "fatigueDelta": 2, "addItem": "dried_rations", "addFlag": "found_abandoned_supplies" }, "logMessage": "버려진 보급품에서 식량을 챙겼다." },
+      { "id": "record", "text": "보급 가능 지점으로 기록한다", "consequences": { "fatigueDelta": 3, "revealTile": { "tileId": "current", "state": "recorded" }, "addFlag": "recorded_supply_point" }, "logMessage": "보급 가능 지점을 지도에 남겼다." }
+    ]
+  },
+  {
+    "id": "enc_animal_tracks_001",
+    "title": "짐승 발자국",
+    "category": "information",
+    "description": "짐승 발자국이 눈 아래 빈 공간과 안전한 숲선을 암시한다.",
+    "body": "작은 발자국들이 위험한 눈밭을 피해 돌아간다.",
+    "trigger": { "terrainTypes": ["forest", "snowfield"] },
+    "conditions": {},
+    "choices": [
+      { "id": "follow", "text": "발자국 방향을 관측한다", "consequences": { "fatigueDelta": 2, "revealTile": { "tileId": "current", "state": "observed" }, "addFlag": "followed_animal_tracks" }, "logMessage": "짐승 발자국이 우회로 단서를 남겼다." },
+      { "id": "ignore", "text": "시간을 아끼고 지나간다", "consequences": { "fatigueDelta": -1, "removeFlag": "followed_animal_tracks" }, "logMessage": "발자국을 무시하고 시간을 아꼈다." }
+    ]
+  },
+  {
+    "id": "enc_tribe_traces_001",
+    "title": "산악 부족의 흔적",
+    "category": "information",
+    "description": "돌 표식과 천 조각이 지역민의 이동로를 암시한다.",
+    "body": "낮은 가지에 묶인 천 조각과 작은 돌무더기가 보인다.",
+    "trigger": { "terrainTypes": ["ridge", "forest", "frozen_pass"] },
+    "conditions": {},
+    "choices": [
+      { "id": "respect", "text": "표식을 훼손하지 않고 기록한다", "consequences": { "fatigueDelta": 3, "revealTile": { "tileId": "current", "state": "recorded" }, "addFlag": "respected_tribe_traces" }, "logMessage": "부족의 이동 표식을 조심스럽게 지도에 옮겼다." },
+      { "id": "take", "text": "천 조각을 표식으로 가져간다", "consequences": { "addItem": "tribal_cloth_marker", "fatigueDelta": 1, "addFlag": "took_tribal_marker" }, "logMessage": "천 조각을 챙겼지만 관계에 문제가 될 수 있다." }
+    ]
+  },
+  {
+    "id": "enc_cave_shelter_001",
+    "title": "얕은 동굴 피난처",
+    "category": "rescue",
+    "description": "바람을 피하고 복귀 지점으로 쓸 수 있는 동굴이다.",
+    "body": "낮은 동굴 안쪽은 건조하고 바람이 닿지 않는다.",
+    "trigger": { "terrainTypes": ["cave"] },
+    "conditions": {},
+    "choices": [
+      { "id": "rest", "text": "동굴에서 쉰다", "consequences": { "healthDelta": 8, "warmthDelta": 16, "fatigueDelta": -18, "foodDelta": -1, "addFlag": "rested_in_cave_shelter" }, "logMessage": "동굴에서 쉬며 체온과 기력을 회복했다." },
+      { "id": "mark", "text": "복귀 피난처로 표시한다", "consequences": { "revealTile": { "tileId": "current", "state": "recorded" }, "addFlag": "marked_cave_return_shelter" }, "logMessage": "동굴을 복귀 피난처로 기록했다." }
+    ]
+  },
+  {
+    "id": "enc_dead_scout_001",
+    "title": "죽은 정찰병",
+    "category": "mixed",
+    "description": "시신에서 지도 단서나 물자를 얻지만 사기가 떨어진다.",
+    "body": "눈 속에 정찰병의 망토와 부러진 숯이 보인다.",
+    "trigger": { "minRisk": 6 },
+    "conditions": {},
+    "choices": [
+      { "id": "search", "text": "시신을 수습하고 단서를 찾는다", "consequences": { "foodDelta": 1, "fatigueDelta": 4, "healthDelta": -2, "revealTile": { "tileId": "current", "state": "recorded" }, "addItem": "charcoal_stub", "addFlag": "searched_dead_scout" }, "logMessage": "죽은 정찰병의 단서가 지도 품질을 높였다." },
+      { "id": "leave", "text": "기도만 하고 떠난다", "consequences": { "fatigueDelta": 1, "addFlag": "left_dead_scout" }, "logMessage": "시신을 뒤지지 않아 마음은 지켰지만 단서는 놓쳤다." }
+    ]
+  },
+  {
+    "id": "enc_collapsed_path_001",
+    "title": "무너진 길",
+    "category": "terrain",
+    "description": "기존 길이 끊겨 우회 기록이 필요하다.",
+    "body": "눈과 돌이 길을 막았다. 군대는 이 길로 갈 수 없다.",
+    "trigger": { "terrainTypes": ["cliff", "ravine", "snowfield"], "minRisk": 7 },
+    "conditions": {},
+    "choices": [
+      { "id": "mark_blocked", "text": "통행 불가로 기록한다", "consequences": { "fatigueDelta": 3, "markRisk": { "tileId": "current", "risk": 10, "note": "군대 통행 불가" }, "addFlag": "marked_collapsed_path" }, "logMessage": "무너진 길을 통행 불가로 표시했다." },
+      { "id": "force", "text": "억지로 넘어간다", "consequences": { "healthDelta": -10, "fatigueDelta": 12, "corruptMapInfo": { "tileId": "current", "note": "무리해서 넘은 길: 군대 가능성 과대평가", "recordedRisk": 4 }, "addFlag": "forced_collapsed_path" }, "logMessage": "혼자 넘은 길을 군대도 가능하다고 착각할 위험이 생겼다." }
+    ]
+  },
+  {
+    "id": "enc_distant_smoke_001",
+    "title": "먼 연기",
+    "category": "information",
+    "description": "멀리 보이는 연기나 신호가 방향 판단을 돕거나 속인다.",
+    "body": "회색 연기가 능선 너머로 얇게 오른다.",
+    "trigger": { "terrainTypes": ["ridge", "frozen_pass"] },
+    "conditions": {},
+    "choices": [
+      { "id": "triangulate", "text": "위치를 재고 지도에 보조선으로 적는다", "consequences": { "fatigueDelta": 3, "revealTile": { "tileId": "current", "state": "observed" }, "addFlag": "triangulated_distant_smoke" }, "logMessage": "먼 연기를 기준점으로 삼아 방향 판단을 보강했다." },
+      { "id": "rush", "text": "연기 쪽으로 서두른다", "consequences": { "fatigueDelta": 8, "warmthDelta": -4, "corruptMapInfo": { "tileId": "current", "note": "연기 방향으로 급히 추정", "recordedRisk": 5 }, "addFlag": "rushed_toward_smoke" }, "logMessage": "연기를 쫓다 지도를 성급하게 적었다." }
+    ]
+  },
+  {
+    "id": "enc_highground_observation_001",
+    "title": "고지대 관측점",
+    "category": "information",
+    "description": "주변 지형을 넓게 관측할 수 있는 고지대다.",
+    "body": "짧은 오르막 끝에서 주변 능선과 고개가 한눈에 들어온다.",
+    "trigger": { "terrainTypes": ["ridge", "cliff"] },
+    "conditions": {},
+    "choices": [
+      { "id": "observe", "text": "시간을 들여 주변을 관측한다", "consequences": { "fatigueDelta": 6, "warmthDelta": -3, "revealTile": { "tileId": "current", "state": "scouted" }, "addFlag": "used_highground_observation" }, "logMessage": "고지대에서 주변 지형을 더 정확히 파악했다." },
+      { "id": "quick", "text": "대략적인 방향만 잡는다", "consequences": { "fatigueDelta": 2, "revealTile": { "tileId": "current", "state": "observed" }, "addFlag": "quick_highground_sighting" }, "logMessage": "방향은 잡았지만 기록은 아직 불완전하다." }
+    ]
+  },
+  {
+    "id": "enc_return_route_hazard_001",
+    "title": "복귀로 위험",
+    "category": "return",
+    "description": "돌아오는 길에 표식이 사라지거나 길이 바뀐다.",
+    "body": "돌아보니 지나온 표식 일부가 눈에 묻혀 있다.",
+    "trigger": { "requiresReturn": true, "minRisk": 5 },
+    "conditions": {},
+    "choices": [
+      { "id": "remark", "text": "복귀 표식을 다시 남긴다", "consequences": { "fatigueDelta": 5, "warmthDelta": -4, "addFlag": "remarked_return_route", "revealTile": { "tileId": "current", "state": "recorded" } }, "logMessage": "복귀 표식을 보강해 돌아올 가능성을 높였다." },
+      { "id": "continue", "text": "그냥 기억에 의존한다", "consequences": { "fatigueDelta": 1, "corruptMapInfo": { "tileId": "current", "note": "복귀 표식 불확실", "recordedRisk": 7 }, "addFlag": "trusted_memory_for_return" }, "logMessage": "복귀 표식을 보강하지 않아 귀환 위험이 커졌다." }
+    ]
+  },
+  {
+    "id": "enc_lost_pack_animal_001",
+    "title": "길 잃은 짐승",
+    "category": "rescue",
+    "description": "버려진 짐승을 진정시키면 식량이나 경로 단서를 얻는다.",
+    "body": "작은 짐승이 끊어진 끈을 끌며 떨고 있다.",
+    "trigger": { "terrainTypes": ["forest", "abandoned_camp"] },
+    "conditions": {},
+    "choices": [
+      { "id": "calm", "text": "먹이를 조금 주고 진정시킨다", "consequences": { "foodDelta": -1, "fatigueDelta": 2, "addItem": "pack_animal_bell", "addFlag": "rescued_pack_animal" }, "logMessage": "짐승의 방울과 흔적이 사람 길의 단서가 되었다." },
+      { "id": "drive", "text": "쫓아 보내고 짐을 챙긴다", "consequences": { "foodDelta": 1, "moraleDelta": -4, "addFlag": "drove_off_pack_animal" }, "logMessage": "작은 식량은 얻었지만 마음이 무거워졌다." }
+    ]
+  }
+]
