@@ -112,8 +112,17 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           ))}
 
           <div className="ingame-header-right-icons">
+            <div className="ingame-header-achievement-slot-wrap">
+              <img
+                className="ingame-header-achievement-slot"
+                src={ingameUiAssets.achievementSlot}
+                alt=""
+                draggable={false}
+              />
+            </div>
+
             <img
-              className="ingame-header-achievement"
+              className="ingame-header-gear"
               src={ingameUiAssets.gearIcon}
               alt=""
               draggable={false}

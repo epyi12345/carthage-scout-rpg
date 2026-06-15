@@ -9,6 +9,7 @@ export const ingameUiAssets = {
   heartLike: assetUrl('assets/panel_cells/ui_icon_03_heart_like.png'),
   scrollPortrait: assetUrl('assets/panel_cells/ui_icon_05_scroll_portrait.png'),
   capsuleFrameWide: assetUrl('assets/panel_cells/ui_icon_06_capsule_frame_wide.png'),
+  achievementSlot: assetUrl('assets/panel_cells/ui_icon_06_capsule_frame_wide.png'),
 
   topDividerLeftSource: assetUrl('assets/panel_cells/ui_icon_10_divider_tall_left.png'),
   centerDividerLine: assetUrl('assets/ui/ui_icon_11_divider_center_line.png'),

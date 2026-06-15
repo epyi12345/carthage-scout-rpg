@@ -146,28 +146,50 @@
 
 .ingame-header-right-icons {
   position: absolute;
-  left: 321px;
+  left: 245px;
   top: 76px;
-  width: 31px;
-  height: 40px;
+  width: 107px;
+  height: 47px;
   pointer-events: none;
   z-index: 2;
 }
 
-.ingame-header-achievement {
+.ingame-header-achievement-slot-wrap {
+  position: absolute;
   left: 0;
+  top: 0;
+  width: 68px;
+  height: 47px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ingame-header-achievement-slot {
+  left: 11px;
+  top: -11px;
+  width: 47px;
+  height: 68px;
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.ingame-header-gear {
+  left: 76px;
   top: 0;
   width: 22px;
   height: 22px;
+  z-index: 3;
 }
 
 .ingame-header-toggle {
-  left: 4px;
+  left: 80px;
   top: 23px;
   width: 27px;
   height: 14px;
   transform: rotate(90deg);
   transform-origin: center center;
+  z-index: 3;
 }
 
 .ingame-text-scroll {
