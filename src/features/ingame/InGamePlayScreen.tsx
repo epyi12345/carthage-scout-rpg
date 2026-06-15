@@ -84,12 +84,14 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </div>
 
-          <img
-            className="ingame-header-portrait"
-            src={ingameUiAssets.scrollPortrait}
-            alt=""
-            draggable={false}
-          />
+          <div className="ingame-header-portrait-wrap">
+            <img
+              className="ingame-header-portrait"
+              src={ingameUiAssets.scrollPortrait}
+              alt=""
+              draggable={false}
+            />
+          </div>
 
           <img
             className="ingame-header-status-bar"
@@ -109,19 +111,21 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           ))}
 
-          <img
-            className="ingame-header-achievement"
-            src={ingameUiAssets.gearIcon}
-            alt=""
-            draggable={false}
-          />
+          <div className="ingame-header-right-icons">
+            <img
+              className="ingame-header-achievement"
+              src={ingameUiAssets.gearIcon}
+              alt=""
+              draggable={false}
+            />
 
-          <img
-            className="ingame-header-toggle"
-            src={ingameUiAssets.smallToggleHorizontal}
-            alt=""
-            draggable={false}
-          />
+            <img
+              className="ingame-header-toggle"
+              src={ingameUiAssets.smallToggleHorizontal}
+              alt=""
+              draggable={false}
+            />
+          </div>
         </header>
 
         <section className="ingame-text-scroll" aria-label="인게임 텍스트 영역">
