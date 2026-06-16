@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { AchievementAlbumPopup } from '../../components/AchievementAlbumPopup';
 import type { Encounter, EncounterChoice } from '../../game/types';
 import { ingameUiAssets } from './ingameAssets';
 import './InGamePlayScreen.css';
@@ -44,6 +46,7 @@ function renderParagraphs(text: string) {
 }
 
 export function InGamePlayScreen({ encounter, missingEncounterId, resultText, resultEncounterId, resultEncounterTitle, onChoiceSelect, onContinueResult }: InGamePlayScreenProps) {
+  const [isAchievementPopupOpen, setIsAchievementPopupOpen] = useState(false);
   const imageContent = encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
   const displayedEncounterId = resultText ? resultEncounterId : encounter?.id;
   const displayedEncounterTitle = resultText ? resultEncounterTitle : encounter?.title;
@@ -65,7 +68,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           draggable={false}
         />
 
-        <header className="ingame-header" aria-hidden="true">
+        <header className="ingame-header">
           <div className="ingame-top-ornament-wrap">
             <img
               className="ingame-top-ornament"
@@ -119,12 +122,19 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
               draggable={false}
             />
 
-            <img
-              className="ingame-header-toggle"
-              src={ingameUiAssets.smallToggleHorizontal}
-              alt=""
-              draggable={false}
-            />
+            <button
+              type="button"
+              className="ingame-header-achievement-button"
+              onClick={() => setIsAchievementPopupOpen(true)}
+              aria-label="업적 열기"
+            >
+              <img
+                className="ingame-header-toggle"
+                src={ingameUiAssets.smallToggleHorizontal}
+                alt=""
+                draggable={false}
+              />
+            </button>
           </div>
         </header>
 
@@ -194,6 +204,12 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           </div>
         </footer>
       </section>
+
+      <AchievementAlbumPopup
+        open={isAchievementPopupOpen}
+        initialTab="achievement"
+        onClose={() => setIsAchievementPopupOpen(false)}
+      />
     </main>
   );
 }

@@ -162,14 +162,35 @@
   z-index: 4;
 }
 
-.ingame-header-toggle {
+.ingame-header-achievement-button {
+  position: absolute;
   left: 68px;
   top: 30px;
   width: 27px;
   height: 14px;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 3;
+}
+
+.ingame-header-achievement-button:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.ingame-header-toggle {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   transform: rotate(90deg);
   transform-origin: center center;
-  z-index: 3;
 }
 
 .ingame-text-scroll {
