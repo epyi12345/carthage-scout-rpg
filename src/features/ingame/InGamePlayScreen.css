@@ -155,16 +155,16 @@
 }
 
 .ingame-header-gear {
-  left: 69px;
-  top: 6px;
+  left: 70px;
+  top: 0;
   width: 22px;
   height: 22px;
   z-index: 4;
 }
 
 .ingame-header-toggle {
-  left: 80px;
-  top: 23px;
+  left: 68px;
+  top: 30px;
   width: 27px;
   height: 14px;
   transform: rotate(90deg);
