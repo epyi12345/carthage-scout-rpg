@@ -154,32 +154,12 @@
   z-index: 2;
 }
 
-.ingame-header-achievement-slot-wrap {
-  position: absolute;
-  left: -12px;
-  top: 8px;
-  width: 68px;
-  height: 47px;
-  overflow: visible;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.ingame-header-achievement-slot {
-  left: 11px;
-  top: -11px;
-  width: 47px;
-  height: 68px;
-  transform: rotate(90deg);
-  transform-origin: center center;
-}
-
 .ingame-header-gear {
-  left: 76px;
-  top: 0;
+  left: 69px;
+  top: 6px;
   width: 22px;
   height: 22px;
-  z-index: 3;
+  z-index: 4;
 }
 
 .ingame-header-toggle {
