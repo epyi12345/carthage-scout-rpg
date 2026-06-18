@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AchievementAlbumPopup } from '../../components/AchievementAlbumPopup';
 import type { Encounter, EncounterChoice } from '../../game/types';
+import { OptionsOverlay } from '../options/OptionsOverlay';
+import { getTextSpeedDelay, loadUiSettings, saveUiSettings } from '../options/uiSettings';
+import { useTypewriterText } from '../typing/useTypewriterText';
 import { ingameUiAssets } from './ingameAssets';
 import './InGamePlayScreen.css';
 
@@ -47,13 +50,39 @@ function renderParagraphs(text: string) {
 
 export function InGamePlayScreen({ encounter, missingEncounterId, resultText, resultEncounterId, resultEncounterTitle, onChoiceSelect, onContinueResult }: InGamePlayScreenProps) {
   const [isAchievementPopupOpen, setIsAchievementPopupOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [settings, setSettings] = useState(loadUiSettings);
   const imageContent = encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
+  const bodyText = imageContent ? `${imageContent.before}${imageContent.after}` : '';
   const displayedEncounterId = resultText ? resultEncounterId : encounter?.id;
   const displayedEncounterTitle = resultText ? resultEncounterTitle : encounter?.title;
+  const activeText = resultText ?? bodyText;
+  const typingKey = resultText
+    ? `result:${resultEncounterId ?? ''}:${resultText}`
+    : `body:${encounter?.id ?? ''}:${encounter?.body ?? ''}`;
+  const typewriter = useTypewriterText({
+    text: activeText,
+    delayMs: getTextSpeedDelay(settings.textSpeed),
+    resetKey: typingKey,
+  });
+  const visibleBefore = imageContent ? typewriter.visibleText.slice(0, imageContent.before.length) : '';
+  const visibleAfter = imageContent ? typewriter.visibleText.slice(imageContent.before.length) : '';
+  const canShowImagePlaceholder = Boolean(imageContent?.placeholder) && typewriter.visibleText.length >= (imageContent?.before.length ?? 0);
+
+  useEffect(() => {
+    saveUiSettings(settings);
+  }, [settings]);
 
   return (
     <main className="ingame-play-screen">
-      <section className="ingame-stage" aria-label="인게임 화면">
+      <section
+        className="ingame-stage"
+        aria-label="인게임 화면"
+        style={{
+          '--game-font-size': `${settings.fontSize}px`,
+          '--game-line-height': settings.lineHeight,
+        }}
+      >
         <img
           className="ingame-background"
           src={ingameUiAssets.parchmentBackground}
@@ -121,6 +150,12 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
               alt=""
               draggable={false}
             />
+            <button
+              type="button"
+              className="ingame-header-options-button"
+              onClick={() => setIsOptionsOpen(true)}
+              aria-label="옵션 열기"
+            />
 
             <button
               type="button"
@@ -138,7 +173,13 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           </div>
         </header>
 
-        <section className="ingame-text-scroll" aria-label="인게임 텍스트 영역">
+        <section
+          className="ingame-text-scroll"
+          aria-label={typewriter.isComplete ? '인게임 텍스트 영역' : '인게임 텍스트 출력 중, 누르면 전체 표시'}
+          onClick={() => {
+            if (!typewriter.isComplete) typewriter.skip();
+          }}
+        >
           {encounter ? (
             <article className="ingame-encounter-content">
               <p className="ingame-encounter-id">{displayedEncounterId}</p>
@@ -146,34 +187,38 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
 
               {resultText ? (
                 <div className="ingame-result-block">
-                  {renderParagraphs(resultText)}
-                  <button type="button" className="ingame-choice-button" onClick={onContinueResult}>
-                    계속
-                  </button>
+                  {renderParagraphs(typewriter.visibleText)}
+                  {typewriter.isComplete && (
+                    <button type="button" className="ingame-choice-button" onClick={onContinueResult}>
+                      계속
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
-                  {imageContent && renderParagraphs(imageContent.before)}
-                  {imageContent?.placeholder && (
+                  {renderParagraphs(visibleBefore)}
+                  {canShowImagePlaceholder && (
                     <div className="ingame-image-placeholder" aria-label="이미지 임시 영역">
-                      {renderParagraphs(imageContent.placeholder)}
+                      {renderParagraphs(imageContent?.placeholder ?? '')}
                     </div>
                   )}
-                  {imageContent && renderParagraphs(imageContent.after)}
+                  {renderParagraphs(visibleAfter)}
 
-                  <div className="ingame-choice-list" aria-label="선택지">
-                    {encounter.choices.map((choice) => (
-                      <button
-                        type="button"
-                        className="ingame-choice-button"
-                        key={choice.id}
-                        disabled={choice.disabled}
-                        onClick={() => onChoiceSelect?.(choice)}
-                      >
-                        {choice.text}
-                      </button>
-                    ))}
-                  </div>
+                  {typewriter.isComplete && (
+                    <div className="ingame-choice-list" aria-label="선택지">
+                      {encounter.choices.map((choice) => (
+                        <button
+                          type="button"
+                          className="ingame-choice-button"
+                          key={choice.id}
+                          disabled={choice.disabled}
+                          onClick={() => onChoiceSelect?.(choice)}
+                        >
+                          {choice.text}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
             </article>
@@ -209,6 +254,12 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         open={isAchievementPopupOpen}
         initialTab="achievement"
         onClose={() => setIsAchievementPopupOpen(false)}
+      />
+      <OptionsOverlay
+        open={isOptionsOpen}
+        settings={settings}
+        onChange={setSettings}
+        onClose={() => setIsOptionsOpen(false)}
       />
     </main>
   );

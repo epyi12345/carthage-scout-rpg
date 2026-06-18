@@ -162,6 +162,28 @@
   z-index: 4;
 }
 
+.ingame-header-options-button {
+  position: absolute;
+  left: 70px;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.ingame-header-options-button:active {
+  transform: none;
+  box-shadow: none;
+}
+
 .ingame-header-achievement-button {
   position: absolute;
   left: 68px;
@@ -259,7 +281,10 @@
   padding: 4.5% 10% 12%;
   color: #26160d;
   font-family: Georgia, 'Times New Roman', serif;
-  line-height: 1.65;
+  font-size: var(--game-font-size, 17px);
+  line-height: var(--game-line-height, 1.55);
+  word-break: keep-all;
+  overflow-wrap: break-word;
   text-shadow: 0 1px 0 rgba(255, 240, 190, 0.35);
 }
 
@@ -279,7 +304,8 @@
 
 .ingame-narrative-paragraph {
   margin: 0 0 7%;
-  font-size: clamp(0.86rem, 3.55vw, 1.04rem);
+  font-size: inherit;
+  line-height: inherit;
   white-space: normal;
 }
 
