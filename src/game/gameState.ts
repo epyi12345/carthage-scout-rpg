@@ -1,7 +1,7 @@
 import { createParchmentPlayerMap, createPlayerMap, generateParchmentSystemMap, generateSystemMap, syncParchmentVisibilityForPosition, tileId } from './mapGenerator';
 import type { GamePhase, GameState, PlayerState } from './types';
 
-export const DEFAULT_MAX_DAYS = 7;
+export const DEFAULT_MAX_DAYS = 21;
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
