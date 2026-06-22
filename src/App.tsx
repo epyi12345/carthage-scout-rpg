@@ -3,7 +3,7 @@ import { newGame } from './game/engine';
 import { hasSave, loadGame, saveGame } from './game/save';
 import type { GameState } from './game/types';
 import { GameScreen } from './screens/GameScreen';
-import { MapLayerTest } from './components/MapLayerTest';
+import { MapTestPage } from './features/mapTest/MapTestPage';
 import { SplashScreen } from './components/SplashScreen';
 import { TitleScreen } from './screens/TitleScreen';
 
@@ -47,7 +47,7 @@ export function App() {
   };
 
   const content = isMapTestPage
-    ? <MapLayerTest />
+    ? <MapTestPage />
     : screen === 'title'
       ? <TitleScreen hasSave={saveExists} onNewGame={startNewGame} onContinue={continueGame} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} themeLabel={theme === 'dark' ? '밝은' : '어두운'} />
       : <GameScreen state={state} setState={setState} onTitle={() => setScreen('title')} />;
