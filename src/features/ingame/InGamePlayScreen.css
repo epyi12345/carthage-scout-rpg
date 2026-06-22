@@ -396,21 +396,10 @@
   box-shadow: none;
 }
 
-.ingame-map-drawer-rail {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  top: 17px;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(33, 22, 13, 0.82);
-  box-shadow: 0 1px 0 rgba(235, 210, 150, 0.32);
-}
-
 .ingame-map-drawer-handle-image {
   position: absolute;
   left: 7.5%;
-  top: 23px;
+  top: 1px;
   width: 84.7222%;
   height: 10px;
   display: block;
@@ -424,7 +413,7 @@
   width: min(88%, 380px);
   flex: 1;
   min-height: 0;
-  margin: -20px auto 0;
+  margin: 0 auto 0;
   padding: 18px 10px 24px;
   overflow-y: auto;
   border-left: 3px solid rgba(20, 18, 14, 0.9);
@@ -452,18 +441,6 @@
   border-top: 2px solid rgba(20, 18, 14, 0.9);
   background: linear-gradient(180deg, rgba(88, 60, 28, 0.2), rgba(31, 22, 13, 0.36));
   pointer-events: none;
-}
-
-.ingame-map-debug-toggle {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 4px;
-  color: #24160d;
-  font-size: 0.68rem;
 }
 
 .ingame-map-paper .map-panel {

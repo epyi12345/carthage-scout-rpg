@@ -13,6 +13,7 @@ interface MapPanelProps {
   onCancelTravel?: () => void;
   onReturnToStart?: () => void;
   onClose?: () => void;
+  compact?: boolean;
 }
 
 function nodeClassName(node: SpecialEncounterNode, isCurrentTarget: boolean): string {
@@ -56,14 +57,15 @@ export function MapPanel({
   onCancelTravel,
   onReturnToStart,
   onClose,
+  compact = false,
 }: MapPanelProps) {
   const currentNode = getCurrentNode(state);
   const currentTravel = state.currentTargetId ? state.travelQueue[state.travelStepIndex] : undefined;
   const romanTraceCount = state.specialNodes.filter((node) => node.type === 'roman_trace' && (node.discovered || node.visited || node.recorded)).length;
 
   return (
-    <section className="map-panel" aria-label="정찰 지도 패널" onClick={(event: { stopPropagation: () => void }) => event.stopPropagation()}>
-      {onClose && (
+    <section className={`map-panel ${compact ? 'compact' : ''}`} aria-label="정찰 지도 패널" onClick={(event: { stopPropagation: () => void }) => event.stopPropagation()}>
+      {onClose && !compact && (
         <button type="button" className="map-panel-close" onClick={onClose} aria-label="지도 닫기">
           닫기
         </button>
@@ -99,6 +101,7 @@ export function MapPanel({
         <span className="map-panel-player-marker" style={{ left: `${pointToPercent(state.playerPosition).x}%`, top: `${pointToPercent(state.playerPosition).y}%` }}>P</span>
       </section>
 
+      {!compact && (<>
       <section className="map-panel-status" aria-label="현재 정찰 지도 상태">
         <div><span>Seed</span><strong>{state.seed}</strong></div>
         <div><span>현재 위치</span><strong>{state.playerPosition.x}, {state.playerPosition.y}</strong></div>
@@ -147,6 +150,7 @@ export function MapPanel({
           </div>
         )}
       </section>
+      </>)}
     </section>
   );
 }

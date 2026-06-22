@@ -124,7 +124,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const { mapState, setMapState, candidates } = useMapRun(mapSeed);
   const [mapDrawerState, setMapDrawerState] = useState<MapDrawerState>('closed');
   const [mapDrawerTranslateY, setMapDrawerTranslateY] = useState(MAP_DRAWER_CLOSED_TRANSLATE_PX);
-  const [isMapDebug, setIsMapDebug] = useState(false);
   const [mapEvent, setMapEvent] = useState<MapEventText | null>(null);
   const [mapHandlePointerStartY, setMapHandlePointerStartY] = useState<number | null>(null);
   const [mapHandlePointerStartTranslateY, setMapHandlePointerStartTranslateY] = useState(MAP_DRAWER_CLOSED_TRANSLATE_PX);
@@ -426,7 +425,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             onPointerCancel={closeMapSheet}
             aria-label={mapDrawerState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
           >
-            <span className="ingame-map-drawer-rail" aria-hidden="true" />
             <img
               className="ingame-map-drawer-handle-image"
               src={ingameUiAssets.mapPullHandleBar}
@@ -436,14 +434,11 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </button>
           <div className="ingame-map-paper">
-            <label className="ingame-map-debug-toggle">
-              <input type="checkbox" checked={isMapDebug} onChange={(event: { target: { checked: boolean } }) => setIsMapDebug(event.target.checked)} />
-              Debug
-            </label>
             <MapPanel
               state={mapState}
               candidates={candidates}
-              isDebug={isMapDebug}
+              isDebug={false}
+              compact
               onSelectCandidate={handleSelectMapCandidate}
               onNextTravelEncounter={handleAdvanceMapTravel}
               onRecordCurrentNode={handleRecordMapNode}
