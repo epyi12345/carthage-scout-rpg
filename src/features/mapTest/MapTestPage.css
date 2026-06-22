@@ -1,6 +1,9 @@
 .map-test-page-v2 {
+  height: 100vh;
+  height: 100dvh;
   min-height: 100dvh;
   display: flex;
+  overflow-y: auto;
   justify-content: center;
   padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom));
   background:

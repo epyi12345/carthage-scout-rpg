@@ -1,13 +1,18 @@
 .ingame-play-screen {
-  --ui-scale: calc(100vw / 360px);
-  --ui-scale: calc(100dvw / 360px);
+  /* Design reference: 9:19.5 mobile portrait. Runtime fills the viewport. */
+  --design-width: 360px;
+  --design-height: 780px;
+  --ui-scale-x: calc(100vw / 360px);
+  --ui-scale-x: calc(100dvw / 360px);
+  --ui-scale-y: calc(100vh / 780px);
+  --ui-scale-y: calc(100dvh / 780px);
 
   width: 100vw;
   width: 100dvw;
-  height: calc(100vw * 16 / 9);
-  height: calc(100dvw * 16 / 9);
-  min-height: calc(100vw * 16 / 9);
-  min-height: calc(100dvw * 16 / 9);
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   display: block;
   overflow: hidden;
   background: #102326;
@@ -15,11 +20,11 @@
 
 .ingame-stage {
   position: relative;
-  width: 360px;
-  height: 640px;
+  width: var(--design-width);
+  height: var(--design-height);
   flex: 0 0 auto;
   overflow: hidden;
-  transform: scale(var(--ui-scale));
+  transform: scale(var(--ui-scale-x), var(--ui-scale-y));
   transform-origin: top left;
 }
 
