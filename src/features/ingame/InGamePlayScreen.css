@@ -1,11 +1,14 @@
 .ingame-play-screen {
-  --ui-scale: min(calc(100vw / 360px), calc(100dvh / 800px));
+  --ui-scale: calc(100vw / 360px);
+  --ui-scale: calc(100dvw / 360px);
 
   width: 100vw;
-  height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100dvw;
+  height: calc(100vw * 16 / 9);
+  height: calc(100dvw * 16 / 9);
+  min-height: calc(100vw * 16 / 9);
+  min-height: calc(100dvw * 16 / 9);
+  display: block;
   overflow: hidden;
   background: #102326;
 }
@@ -13,11 +16,11 @@
 .ingame-stage {
   position: relative;
   width: 360px;
-  height: 800px;
+  height: 640px;
   flex: 0 0 auto;
   overflow: hidden;
   transform: scale(var(--ui-scale));
-  transform-origin: center center;
+  transform-origin: top left;
 }
 
 .ingame-background {
