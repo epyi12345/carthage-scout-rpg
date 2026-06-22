@@ -45,6 +45,18 @@ interface MapEventText {
   choices: MapEventChoice[];
 }
 
+type MapDrawerState = 'closed' | 'dragging' | 'open';
+
+const MAP_DRAWER_HEIGHT_PX = 576;
+const MAP_DRAWER_HANDLE_HEIGHT_PX = 66;
+const MAP_DRAWER_CLOSED_TRANSLATE_PX = MAP_DRAWER_HEIGHT_PX - MAP_DRAWER_HANDLE_HEIGHT_PX;
+const MAP_DRAWER_DRAG_THRESHOLD_PX = 40;
+const MAP_DRAWER_TAP_THRESHOLD_PX = 8;
+
+function clampMapDrawerTranslate(value: number): number {
+  return Math.max(0, Math.min(MAP_DRAWER_CLOSED_TRANSLATE_PX, value));
+}
+
 function createTravelOrArrivalEvent(state: MapRunState, onAdvance: () => void, onRecord: () => void, onOpenMap: () => void): MapEventText {
   const travel = state.currentTargetId ? state.travelQueue[state.travelStepIndex] : undefined;
   if (travel) {
@@ -110,10 +122,12 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const [settings, setSettings] = useState(loadUiSettings);
   const [mapSeed] = useState(() => `run-${Date.now()}`);
   const { mapState, setMapState, candidates } = useMapRun(mapSeed);
-  const [isMapSheetOpen, setIsMapSheetOpen] = useState(false);
+  const [mapDrawerState, setMapDrawerState] = useState<MapDrawerState>('closed');
+  const [mapDrawerTranslateY, setMapDrawerTranslateY] = useState(MAP_DRAWER_CLOSED_TRANSLATE_PX);
   const [isMapDebug, setIsMapDebug] = useState(false);
   const [mapEvent, setMapEvent] = useState<MapEventText | null>(null);
   const [mapHandlePointerStartY, setMapHandlePointerStartY] = useState<number | null>(null);
+  const [mapHandlePointerStartTranslateY, setMapHandlePointerStartTranslateY] = useState(MAP_DRAWER_CLOSED_TRANSLATE_PX);
   const imageContent = !mapEvent && encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
   const bodyText = imageContent ? `${imageContent.before}${imageContent.after}` : '';
   const displayedEncounterId = mapEvent ? mapEvent.id : resultText ? resultEncounterId : encounter?.id;
@@ -138,10 +152,16 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   }, [settings]);
 
 
-  const openMapSheet = () => setIsMapSheetOpen(true);
-  const closeMapSheet = () => setIsMapSheetOpen(false);
+  const openMapSheet = () => {
+    setMapDrawerState('open');
+    setMapDrawerTranslateY(0);
+  };
+  const closeMapSheet = () => {
+    setMapDrawerState('closed');
+    setMapDrawerTranslateY(MAP_DRAWER_CLOSED_TRANSLATE_PX);
+  };
   const handleSelectMapCandidate = (candidate: DirectionCandidate) => {
-    setIsMapSheetOpen(false);
+    closeMapSheet();
     setMapState((current) => {
       const nextState = selectDirectionCandidate(current, candidate);
       setMapEvent(createTravelOrArrivalEvent(nextState, handleAdvanceMapTravel, handleRecordMapNode, openMapSheet));
@@ -173,13 +193,42 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
       return nextState;
     });
   };
-  const handleMapHandlePointerDown = (event: { clientY: number }) => {
+  const handleMapHandlePointerDown = (event: { clientY: number; pointerId?: number; currentTarget?: { setPointerCapture?: (pointerId: number) => void } }) => {
+    if (event.pointerId !== undefined) event.currentTarget?.setPointerCapture?.(event.pointerId);
     setMapHandlePointerStartY(event.clientY);
+    setMapHandlePointerStartTranslateY(mapDrawerState === 'open' ? 0 : MAP_DRAWER_CLOSED_TRANSLATE_PX);
+    setMapDrawerState('dragging');
+  };
+  const handleMapHandlePointerMove = (event: { clientY: number }) => {
+    if (mapDrawerState !== 'dragging' || mapHandlePointerStartY === null) return;
+    const deltaY = event.clientY - mapHandlePointerStartY;
+    setMapDrawerTranslateY(clampMapDrawerTranslate(mapHandlePointerStartTranslateY + deltaY));
   };
   const handleMapHandlePointerUp = (event: { clientY: number }) => {
     const startY = mapHandlePointerStartY;
+    const startTranslateY = mapHandlePointerStartTranslateY;
     setMapHandlePointerStartY(null);
-    if (startY === null || startY - event.clientY >= 30 || Math.abs(startY - event.clientY) < 8) openMapSheet();
+    if (startY === null) {
+      setMapDrawerState(mapDrawerTranslateY <= MAP_DRAWER_CLOSED_TRANSLATE_PX / 2 ? 'open' : 'closed');
+      return;
+    }
+
+    const deltaY = event.clientY - startY;
+    const wasTap = Math.abs(deltaY) < MAP_DRAWER_TAP_THRESHOLD_PX;
+    if (wasTap) {
+      if (startTranslateY === 0) closeMapSheet();
+      else openMapSheet();
+      return;
+    }
+
+    if (startTranslateY === MAP_DRAWER_CLOSED_TRANSLATE_PX) {
+      if (deltaY <= -MAP_DRAWER_DRAG_THRESHOLD_PX || mapDrawerTranslateY <= MAP_DRAWER_CLOSED_TRANSLATE_PX * 0.72) openMapSheet();
+      else closeMapSheet();
+      return;
+    }
+
+    if (deltaY >= MAP_DRAWER_DRAG_THRESHOLD_PX || mapDrawerTranslateY >= MAP_DRAWER_CLOSED_TRANSLATE_PX * 0.28) closeMapSheet();
+    else openMapSheet();
   };
 
   return (
@@ -352,24 +401,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           )}
         </section>
 
-        <footer className="ingame-footer">
-          <button
-            type="button"
-            className="footer-map-handle-button"
-            onClick={openMapSheet}
-            onPointerDown={handleMapHandlePointerDown}
-            onPointerUp={handleMapHandlePointerUp}
-            aria-label="정찰 지도 열기"
-          >
-            <img
-              className="footer-map-handle"
-              src={ingameUiAssets.mapPullHandleBar}
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-            />
-          </button>
-
+        <footer className="ingame-footer" aria-hidden="true">
           <div className="ingame-bottom-ornament-wrap">
             <img
               className="ingame-bottom-ornament"
@@ -380,26 +412,45 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           </div>
         </footer>
 
-        <section className={`ingame-map-sheet ${isMapSheetOpen ? 'open' : ''}`} aria-hidden={!isMapSheetOpen}>
-          <div className="ingame-map-sheet-grip" onPointerDown={handleMapHandlePointerDown} onPointerUp={(event: { clientY: number }) => {
-            const startY = mapHandlePointerStartY;
-            setMapHandlePointerStartY(null);
-            if (startY !== null && event.clientY - startY >= 30) closeMapSheet();
-          }} />
-          <label className="ingame-map-debug-toggle">
-            <input type="checkbox" checked={isMapDebug} onChange={(event: { target: { checked: boolean } }) => setIsMapDebug(event.target.checked)} />
-            Debug
-          </label>
-          <MapPanel
-            state={mapState}
-            candidates={candidates}
-            isDebug={isMapDebug}
-            onSelectCandidate={handleSelectMapCandidate}
-            onNextTravelEncounter={handleAdvanceMapTravel}
-            onRecordCurrentNode={handleRecordMapNode}
-            onCancelTravel={handleCancelMapTravel}
-            onClose={closeMapSheet}
-          />
+        <section
+          className={`ingame-map-drawer is-${mapDrawerState}`}
+          aria-hidden={mapDrawerState === 'closed'}
+          style={{ '--map-drawer-translate': `${mapDrawerTranslateY}px` }}
+        >
+          <button
+            type="button"
+            className="ingame-map-drawer-handle"
+            onPointerDown={handleMapHandlePointerDown}
+            onPointerMove={handleMapHandlePointerMove}
+            onPointerUp={handleMapHandlePointerUp}
+            onPointerCancel={closeMapSheet}
+            aria-label={mapDrawerState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
+          >
+            <span className="ingame-map-drawer-rail" aria-hidden="true" />
+            <img
+              className="ingame-map-drawer-handle-image"
+              src={ingameUiAssets.mapPullHandleBar}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+            />
+          </button>
+          <div className="ingame-map-paper">
+            <label className="ingame-map-debug-toggle">
+              <input type="checkbox" checked={isMapDebug} onChange={(event: { target: { checked: boolean } }) => setIsMapDebug(event.target.checked)} />
+              Debug
+            </label>
+            <MapPanel
+              state={mapState}
+              candidates={candidates}
+              isDebug={isMapDebug}
+              onSelectCandidate={handleSelectMapCandidate}
+              onNextTravelEncounter={handleAdvanceMapTravel}
+              onRecordCurrentNode={handleRecordMapNode}
+              onCancelTravel={handleCancelMapTravel}
+              onClose={closeMapSheet}
+            />
+          </div>
         </section>
       </section>
 
