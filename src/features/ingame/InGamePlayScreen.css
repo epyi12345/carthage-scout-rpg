@@ -450,10 +450,11 @@
 .ingame-map-paper {
   position: relative;
   width: min(88%, 380px);
+  align-self: center;
   flex: 1;
   min-height: 0;
-  margin: 0 auto 0;
-  padding: 18px 10px 24px;
+  margin: 0;
+  padding: 0 10px 24px;
   overflow-y: auto;
   border-top: 0;
   border-left: 3px solid rgba(20, 18, 14, 0.9);
@@ -466,7 +467,7 @@
     rgba(190, 176, 145, 0.88);
   box-shadow:
     inset 0 0 34px rgba(59, 38, 18, 0.2),
-    0 -4px 16px rgba(0, 0, 0, 0.25);
+    0 10px 16px rgba(0, 0, 0, 0.2);
 }
 
 .ingame-map-drawer:not(.is-open):not(.is-dragging) .ingame-map-paper {
@@ -493,7 +494,7 @@
 }
 
 .ingame-map-paper .map-panel {
-  padding-top: 2px;
+  padding-top: 0;
 }
 
 .ingame-map-paper .map-panel-close {
