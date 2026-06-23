@@ -11,6 +11,9 @@ import { useTypewriterText } from '../typing/useTypewriterText';
 import { ingameUiAssets } from './ingameAssets';
 import './InGamePlayScreen.css';
 
+const INGAME_DESIGN_WIDTH = 390;
+const INGAME_DESIGN_HEIGHT = 844;
+
 interface InGamePlayScreenProps {
   encounter?: Encounter;
   missingEncounterId?: string | null;
@@ -52,6 +55,33 @@ const MAP_DRAWER_HANDLE_HEIGHT_PX = 66;
 const MAP_DRAWER_CLOSED_TRANSLATE_PX = MAP_DRAWER_HEIGHT_PX - MAP_DRAWER_HANDLE_HEIGHT_PX;
 const MAP_DRAWER_DRAG_THRESHOLD_PX = 40;
 const MAP_DRAWER_TAP_THRESHOLD_PX = 8;
+
+function getViewportSize() {
+  if (typeof window === 'undefined') return { width: INGAME_DESIGN_WIDTH, height: INGAME_DESIGN_HEIGHT };
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+}
+
+function useViewportSize() {
+  const [size, setSize] = useState(getViewportSize);
+
+  useEffect(() => {
+    const updateSize = () => setSize(getViewportSize());
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('orientationchange', updateSize);
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('orientationchange', updateSize);
+    };
+  }, []);
+
+  return size;
+}
 
 function clampMapDrawerTranslate(value: number): number {
   return Math.max(0, Math.min(MAP_DRAWER_CLOSED_TRANSLATE_PX, value));
@@ -127,6 +157,11 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const [mapEvent, setMapEvent] = useState<MapEventText | null>(null);
   const [mapHandlePointerStartY, setMapHandlePointerStartY] = useState<number | null>(null);
   const [mapHandlePointerStartTranslateY, setMapHandlePointerStartTranslateY] = useState(MAP_DRAWER_CLOSED_TRANSLATE_PX);
+  const viewportSize = useViewportSize();
+  const uiScale = Math.min(
+    viewportSize.width / INGAME_DESIGN_WIDTH,
+    viewportSize.height / INGAME_DESIGN_HEIGHT,
+  );
   const imageContent = !mapEvent && encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
   const bodyText = imageContent ? `${imageContent.before}${imageContent.after}` : '';
   const displayedEncounterId = mapEvent ? mapEvent.id : resultText ? resultEncounterId : encounter?.id;
@@ -200,7 +235,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   };
   const handleMapHandlePointerMove = (event: { clientY: number }) => {
     if (mapDrawerState !== 'dragging' || mapHandlePointerStartY === null) return;
-    const deltaY = event.clientY - mapHandlePointerStartY;
+    const deltaY = (event.clientY - mapHandlePointerStartY) / uiScale;
     setMapDrawerTranslateY(clampMapDrawerTranslate(mapHandlePointerStartTranslateY + deltaY));
   };
   const handleMapHandlePointerUp = (event: { clientY: number }) => {
@@ -212,7 +247,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
       return;
     }
 
-    const deltaY = event.clientY - startY;
+    const deltaY = (event.clientY - startY) / uiScale;
     const wasTap = Math.abs(deltaY) < MAP_DRAWER_TAP_THRESHOLD_PX;
     if (wasTap) {
       if (startTranslateY === 0) closeMapSheet();
@@ -235,25 +270,33 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
       <section
         className="ingame-stage"
         aria-label="인게임 화면"
-        style={{
-          '--game-font-size': `${settings.fontSize}px`,
-          '--game-line-height': settings.lineHeight,
-        }}
       >
-        <img
-          className="ingame-background"
-          src={ingameUiAssets.parchmentBackground}
-          alt=""
-          draggable={false}
-        />
+        <div className="ingame-background-layer" aria-hidden="true">
+          <img
+            className="ingame-background"
+            src={ingameUiAssets.parchmentBackground}
+            alt=""
+            draggable={false}
+          />
 
-        <img
-          className="ingame-vignette"
-          src={ingameUiAssets.outerVignetteFrame}
-          alt=""
-          draggable={false}
-        />
+          <img
+            className="ingame-vignette"
+            src={ingameUiAssets.outerVignetteFrame}
+            alt=""
+            draggable={false}
+          />
+        </div>
 
+        <div className="ingame-ui-scale-viewport">
+          <div
+            className="ingame-ui-canvas"
+            style={{
+              '--ingame-ui-scale': uiScale,
+              '--game-font-size': `${settings.fontSize}px`,
+              '--game-line-height': settings.lineHeight,
+            }}
+          >
+            <div className="ingame-ui-layout">
         <header className="ingame-header">
           <div className="ingame-top-ornament-wrap">
             <img
@@ -447,6 +490,9 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </div>
         </section>
+            </div>
+          </div>
+        </div>
       </section>
 
       <AchievementAlbumPopup

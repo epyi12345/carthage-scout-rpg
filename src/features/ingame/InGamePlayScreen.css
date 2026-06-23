@@ -1,12 +1,4 @@
 .ingame-play-screen {
-  /* Design reference: 9:19.5 mobile portrait. Runtime fills the viewport. */
-  --design-width: 360px;
-  --design-height: 780px;
-  --ui-scale-x: calc(100vw / 360px);
-  --ui-scale-x: calc(100dvw / 360px);
-  --ui-scale-y: calc(100vh / 780px);
-  --ui-scale-y: calc(100dvh / 780px);
-
   width: 100vw;
   width: 100dvw;
   height: 100vh;
@@ -20,18 +12,56 @@
 
 .ingame-stage {
   position: relative;
-  width: var(--design-width);
-  height: var(--design-height);
-  flex: 0 0 auto;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   overflow: hidden;
-  transform: scale(var(--ui-scale-x), var(--ui-scale-y));
-  transform-origin: top left;
+}
+
+.ingame-background-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ingame-ui-scale-viewport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ingame-ui-canvas {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  overflow: hidden;
+  pointer-events: auto;
+  transform: scale(var(--ingame-ui-scale));
+  transform-origin: top center;
+}
+
+.ingame-ui-layout {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 360px;
+  height: 844px;
+  overflow: hidden;
+  transform: translateX(-50%);
 }
 
 .ingame-background {
   position: absolute;
-  left: 0%;
-  top: 0%;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -42,14 +72,13 @@
 
 .ingame-vignette {
   position: absolute;
-  left: 0%;
-  top: 0%;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   pointer-events: none;
   user-select: none;
-  z-index: 10;
+  z-index: 1;
 }
 
 .ingame-header {
