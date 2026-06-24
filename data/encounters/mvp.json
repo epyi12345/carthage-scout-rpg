@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ENC_MVP_AVALANCHE_SLOPE",
+    "title": "흔들리는 눈사면",
+    "category": "survival",
+    "occurrenceType": "location_based",
+    "tone": "harsh",
+    "body": "발밑의 눈이 낮게 울린다.\n\n정찰병 하나는 지나갈 수 있다.\n하지만 수천 명의 병사와 짐승이 이 경사를 밟는다면, 산이 먼저 대답할 것이다.",
+    "choices": [
+      {
+        "id": "mark_danger",
+        "text": "위험 경사로 기록한다",
+        "effects": { "fatigue": 4, "warmth": -4, "addFlags": ["marked_avalanche_slope"], "markTile": { "tileId": "current", "state": "recorded" } }
+      },
+      {
+        "id": "cross_fast",
+        "text": "빠르게 통과한다",
+        "effects": { "health": -8, "warmth": -7, "fatigue": 8, "addFlags": ["rushed_avalanche_slope"] }
+      }
+    ]
+  },
+  {
+    "id": "ENC_MVP_SUPPLY_CACHE",
+    "title": "버려진 보급 꾸러미",
+    "category": "search",
+    "occurrenceType": "location_based",
+    "tone": "realistic",
+    "body": "바위 그늘 아래 젖은 가죽 꾸러미가 있다.\n\n누군가의 보급품이었거나, 누군가가 돌아오지 못했다는 증거다.",
+    "choices": [
+      {
+        "id": "take_food",
+        "text": "먹을 수 있는 것을 챙긴다",
+        "effects": { "food": 2, "fatigue": 2, "addFlags": ["found_supply_cache"] }
+      },
+      {
+        "id": "record_cache",
+        "text": "보급 가능 지점으로 기록한다",
+        "effects": { "fatigue": 3, "addFlags": ["recorded_supply_cache"], "markTile": { "tileId": "current", "state": "recorded" } }
+      }
+    ]
+  },
+  {
+    "id": "ENC_MVP_PASS_MARKER",
+    "title": "낡은 돌무더기",
+    "category": "map_info",
+    "occurrenceType": "location_based",
+    "tone": "mysterious",
+    "body": "능선 아래에 오래된 돌무더기가 있다.\n\n표식인지 무덤인지 알 수 없다. 그러나 돌이 놓인 방향은 낮은 고개를 가리키고 있다.",
+    "choices": [
+      {
+        "id": "trust_marker",
+        "text": "돌무더기의 방향을 지도에 반영한다",
+        "effects": { "fatigue": 2, "addFlags": ["trusted_old_pass_marker"], "markTile": { "tileId": "current", "state": "route_connected" } }
+      },
+      {
+        "id": "ignore_marker",
+        "text": "민담으로 여기고 지나간다",
+        "effects": { "warmth": -2, "addFlags": ["ignored_old_pass_marker"] }
+      }
+    ]
+  }
+]
