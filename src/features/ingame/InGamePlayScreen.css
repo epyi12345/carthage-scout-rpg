@@ -384,11 +384,44 @@
 }
 
 
-.ingame-map-drawer {
+.ingame-map-system {
   --map-drawer-height: 576px;
   --map-handle-height: 66px;
-  --map-drawer-translate: calc(var(--map-drawer-height) - var(--map-handle-height));
+  --map-drawer-translate: var(--map-drawer-height);
 
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.ingame-map-fixed-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--map-handle-height);
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+  z-index: 50;
+}
+
+.ingame-map-fixed-handle:active {
+  cursor: grabbing;
+  transform: none;
+  box-shadow: none;
+}
+
+.ingame-map-scroll-layer {
   position: absolute;
   left: 0;
   right: 0;
@@ -397,22 +430,29 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  transform: translateY(calc(var(--map-drawer-height) - var(--map-handle-height)));
+  transform: translateY(var(--map-drawer-height));
   transition: transform 220ms ease-out;
-  pointer-events: auto;
-  z-index: 40;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 45;
 }
 
-.ingame-map-drawer.is-open {
+.ingame-map-scroll-layer.is-open {
   transform: translateY(0);
 }
 
-.ingame-map-drawer.is-dragging {
+.ingame-map-scroll-layer.is-dragging {
   transform: translateY(var(--map-drawer-translate));
   transition: none;
 }
 
-.ingame-map-drawer-handle {
+.ingame-map-scroll-layer.is-open,
+.ingame-map-scroll-layer.is-dragging {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ingame-map-scroll-handle {
   position: relative;
   width: 100%;
   flex: 0 0 var(--map-handle-height);
@@ -429,13 +469,14 @@
   z-index: 2;
 }
 
-.ingame-map-drawer-handle:active {
+.ingame-map-scroll-handle:active {
   cursor: grabbing;
   transform: none;
   box-shadow: none;
 }
 
-.ingame-map-drawer-handle-image {
+.ingame-map-fixed-handle-image,
+.ingame-map-scroll-handle-image {
   position: absolute;
   left: 7.5%;
   bottom: 0;
@@ -468,15 +509,6 @@
   box-shadow:
     inset 0 0 34px rgba(59, 38, 18, 0.2),
     0 10px 16px rgba(0, 0, 0, 0.2);
-}
-
-.ingame-map-drawer:not(.is-open):not(.is-dragging) .ingame-map-paper {
-  visibility: hidden;
-}
-
-.ingame-map-drawer.is-open .ingame-map-paper,
-.ingame-map-drawer.is-dragging .ingame-map-paper {
-  visibility: visible;
 }
 
 .ingame-map-paper::after {

@@ -52,7 +52,7 @@ type MapDrawerState = 'closed' | 'dragging' | 'open';
 
 const MAP_DRAWER_HEIGHT_PX = 576;
 const MAP_DRAWER_HANDLE_HEIGHT_PX = 66;
-const MAP_DRAWER_CLOSED_TRANSLATE_PX = MAP_DRAWER_HEIGHT_PX - MAP_DRAWER_HANDLE_HEIGHT_PX;
+const MAP_DRAWER_CLOSED_TRANSLATE_PX = MAP_DRAWER_HEIGHT_PX;
 const MAP_DRAWER_DRAG_THRESHOLD_PX = 40;
 const MAP_DRAWER_TAP_THRESHOLD_PX = 8;
 
@@ -454,14 +454,10 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
           </div>
         </footer>
 
-        <section
-          className={`ingame-map-drawer is-${mapDrawerState}`}
-          aria-hidden={mapDrawerState === 'closed'}
-          style={{ '--map-drawer-translate': `${mapDrawerTranslateY}px` }}
-        >
+        <section className="ingame-map-system" aria-label="정찰 지도 드로어">
           <button
             type="button"
-            className="ingame-map-drawer-handle"
+            className="ingame-map-fixed-handle"
             onPointerDown={handleMapHandlePointerDown}
             onPointerMove={handleMapHandlePointerMove}
             onPointerUp={handleMapHandlePointerUp}
@@ -469,26 +465,51 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             aria-label={mapDrawerState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
           >
             <img
-              className="ingame-map-drawer-handle-image"
+              className="ingame-map-fixed-handle-image"
               src={ingameUiAssets.mapPullHandleBar}
               alt=""
               aria-hidden="true"
               draggable={false}
             />
           </button>
-          <div className="ingame-map-paper">
-            <MapPanel
-              state={mapState}
-              candidates={candidates}
-              isDebug={false}
-              compact
-              onSelectCandidate={handleSelectMapCandidate}
-              onNextTravelEncounter={handleAdvanceMapTravel}
-              onRecordCurrentNode={handleRecordMapNode}
-              onCancelTravel={handleCancelMapTravel}
-              onClose={closeMapSheet}
-            />
-          </div>
+
+          <section
+            className={`ingame-map-scroll-layer is-${mapDrawerState}`}
+            aria-hidden={mapDrawerState === 'closed'}
+            style={{ '--map-drawer-translate': `${mapDrawerTranslateY}px` }}
+          >
+            <button
+              type="button"
+              className="ingame-map-scroll-handle"
+              onPointerDown={handleMapHandlePointerDown}
+              onPointerMove={handleMapHandlePointerMove}
+              onPointerUp={handleMapHandlePointerUp}
+              onPointerCancel={closeMapSheet}
+              aria-label={mapDrawerState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
+            >
+              <img
+                className="ingame-map-scroll-handle-image"
+                src={ingameUiAssets.mapPullHandleBar}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+              />
+            </button>
+
+            <div className="ingame-map-paper">
+              <MapPanel
+                state={mapState}
+                candidates={candidates}
+                isDebug={false}
+                compact
+                onSelectCandidate={handleSelectMapCandidate}
+                onNextTravelEncounter={handleAdvanceMapTravel}
+                onRecordCurrentNode={handleRecordMapNode}
+                onCancelTravel={handleCancelMapTravel}
+                onClose={closeMapSheet}
+              />
+            </div>
+          </section>
         </section>
             </div>
           </div>
