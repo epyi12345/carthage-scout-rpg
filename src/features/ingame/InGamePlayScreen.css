@@ -49,6 +49,10 @@
   transform-origin: top center;
 }
 
+.ingame-ui-canvas img {
+  max-width: none;
+}
+
 .ingame-ui-layout {
   position: absolute;
   left: 50%;
@@ -95,6 +99,7 @@
 .ingame-header img {
   position: absolute;
   display: block;
+  max-width: none;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
@@ -413,7 +418,7 @@
 
 .ingame-map-fixed-handle {
   width: 26px;
-  height: 4px;
+  height: 6px;
   pointer-events: none;
   z-index: 60;
 }
@@ -493,8 +498,9 @@
   left: 50%;
   bottom: 0;
   width: 26px;
-  height: 4px;
+  height: 6px;
   display: block;
+  max-width: none;
   object-fit: fill;
   pointer-events: none;
   user-select: none;
