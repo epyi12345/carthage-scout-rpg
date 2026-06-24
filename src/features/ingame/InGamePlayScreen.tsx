@@ -455,23 +455,24 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         </footer>
 
         <section className="ingame-map-system" aria-label="정찰 지도 드로어">
+          <div className="ingame-map-fixed-handle" aria-hidden="true">
+            <img
+              className="ingame-map-fixed-handle-image"
+              src={ingameUiAssets.mapPullHandleBar}
+              alt=""
+              draggable={false}
+            />
+          </div>
+
           <button
             type="button"
-            className="ingame-map-fixed-handle"
+            className="ingame-map-pull-hit-area"
             onPointerDown={handleMapHandlePointerDown}
             onPointerMove={handleMapHandlePointerMove}
             onPointerUp={handleMapHandlePointerUp}
             onPointerCancel={closeMapSheet}
             aria-label={mapDrawerState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
-          >
-            <img
-              className="ingame-map-fixed-handle-image"
-              src={ingameUiAssets.mapPullHandleBar}
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-            />
-          </button>
+          />
 
           <section
             className={`ingame-map-scroll-layer is-${mapDrawerState}`}

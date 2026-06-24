@@ -387,6 +387,7 @@
 .ingame-map-system {
   --map-drawer-height: 576px;
   --map-handle-height: 66px;
+  --map-fixed-handle-bottom: 11.5%;
   --map-drawer-translate: var(--map-drawer-height);
 
   position: absolute;
@@ -395,11 +396,12 @@
   z-index: 40;
 }
 
-.ingame-map-fixed-handle {
+.ingame-map-fixed-handle,
+.ingame-map-pull-hit-area {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: var(--map-fixed-handle-bottom);
   width: 100%;
   height: var(--map-handle-height);
   min-height: 0;
@@ -409,13 +411,21 @@
   margin: 0;
   background: transparent;
   box-shadow: none;
-  cursor: grab;
-  touch-action: none;
-  pointer-events: auto;
+}
+
+.ingame-map-fixed-handle {
+  pointer-events: none;
   z-index: 50;
 }
 
-.ingame-map-fixed-handle:active {
+.ingame-map-pull-hit-area {
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+  z-index: 70;
+}
+
+.ingame-map-pull-hit-area:active {
   cursor: grabbing;
   transform: none;
   box-shadow: none;
@@ -425,7 +435,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: var(--map-fixed-handle-bottom);
   height: var(--map-drawer-height);
   display: flex;
   flex-direction: column;
