@@ -453,6 +453,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             />
           </div>
         </footer>
+            </div>
 
         <section className="ingame-map-system" aria-label="정찰 지도 드로어">
           <div className="ingame-map-fixed-handle" aria-hidden="true">
@@ -512,7 +513,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             </div>
           </section>
         </section>
-            </div>
           </div>
         </div>
       </section>
