@@ -1,0 +1,229 @@
+.achievement-popup-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  overscroll-behavior: contain;
+}
+
+.achievement-popup-vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.achievement-popup-panel-wrap {
+  position: relative;
+  width: min(88vw, 420px);
+  max-height: 92dvh;
+  aspect-ratio: 4 / 5;
+  z-index: 2;
+}
+
+.achievement-popup-panel-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.achievement-popup-back,
+.achievement-popup-close,
+.achievement-popup-tab {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  min-height: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.achievement-popup-back,
+.achievement-popup-close {
+  position: absolute;
+  z-index: 5;
+}
+
+.achievement-popup-back {
+  left: 5%;
+  top: 5%;
+  width: 8%;
+}
+
+.achievement-popup-close {
+  right: 6%;
+  top: 5%;
+  width: 7%;
+}
+
+.achievement-popup-back img,
+.achievement-popup-close img,
+.achievement-popup-tab img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.achievement-popup-tabs {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 12%;
+  height: 11%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  z-index: 4;
+}
+
+.achievement-popup-tab {
+  flex: 1;
+}
+
+.achievement-popup-back:active,
+.achievement-popup-close:active,
+.achievement-popup-tab:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.achievement-popup-content {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 24%;
+  bottom: 10%;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.achievement-scroll-area,
+.album-scroll-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.achievement-scroll-area::-webkit-scrollbar,
+.album-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.achievement-scroll-area::-webkit-scrollbar-track,
+.album-scroll-area::-webkit-scrollbar-track {
+  background-image: var(--achievement-scrollbar-track);
+  background-size: 100% 100%;
+}
+
+.achievement-scroll-area::-webkit-scrollbar-thumb,
+.album-scroll-area::-webkit-scrollbar-thumb {
+  background-image: var(--achievement-scrollbar-thumb);
+  background-size: 100% 100%;
+}
+
+.achievement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-right: 4%;
+  padding-bottom: 5%;
+}
+
+.achievement-row {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.achievement-row-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.achievement-row-text {
+  position: absolute;
+  left: 7%;
+  top: 22%;
+  right: 32%;
+  z-index: 2;
+  color: #15100a;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.achievement-row-title {
+  margin: 0;
+  font-size: clamp(1rem, 4.2vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.achievement-row-desc {
+  margin: 6% 0 0;
+  font-size: clamp(0.68rem, 2.9vw, 0.95rem);
+  line-height: 1.25;
+}
+
+.achievement-thumb {
+  position: absolute;
+  right: 7%;
+  top: 21%;
+  width: 18%;
+  aspect-ratio: 1 / 1;
+  z-index: 2;
+}
+
+.achievement-thumb-slot,
+.achievement-thumb-image,
+.achievement-locked-overlay,
+.album-slot-bg,
+.album-slot-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4%;
+  padding-right: 4%;
+  padding-bottom: 6%;
+}
+
+.album-slot {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+}
+
+.album-slot-image {
+  box-sizing: border-box;
+  padding: 8%;
+}
