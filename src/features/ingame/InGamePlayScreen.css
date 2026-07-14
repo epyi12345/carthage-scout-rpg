@@ -389,17 +389,16 @@
 }
 
 
-.ingame-map-handle-visual {
+.footer-map-handle {
   position: absolute;
-  left: 50%;
-  bottom: 58px;
-  width: 26px;
-  height: 6px;
+  left: 7.5%;
+  top: 29.3478%;
+  width: 84.7222%;
+  height: 10.8696%;
   display: block;
   max-width: none;
   object-fit: fill;
+  z-index: 5;
   pointer-events: none;
   user-select: none;
-  transform: translateX(-50%);
-  z-index: 40;
 }

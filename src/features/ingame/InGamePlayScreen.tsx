@@ -277,6 +277,14 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         </section>
 
         <footer className="ingame-footer" aria-hidden="true">
+          <img
+            className="footer-map-handle"
+            src={ingameUiAssets.mapPullHandleBar}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+          />
+
           <div className="ingame-bottom-ornament-wrap">
             <img
               className="ingame-bottom-ornament"
@@ -288,13 +296,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         </footer>
             </div>
 
-        <img
-          className="ingame-map-handle-visual"
-          src={ingameUiAssets.mapPullHandleBar}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-        />
           </div>
         </div>
       </section>
