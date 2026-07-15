@@ -36,7 +36,7 @@ function splitImagePlaceholder(body: string, fallbackPlaceholder?: string) {
 const headerHeartLefts = [100, 127, 154];
 
 
-type MapScrollState = 'closed' | 'dragging' | 'open';
+type MapRevealState = 'closed' | 'dragging' | 'preview' | 'open';
 
 type HandleRect = {
   left: number;
@@ -45,10 +45,11 @@ type HandleRect = {
   height: number;
 };
 
-const MAP_SCROLL_OPEN_THRESHOLD = 0.25;
-const MAP_SCROLL_TAP_DISTANCE = 6;
-const MAP_SCROLL_MAX_WIDTH = 380;
-const MAP_SCROLL_TOP_GAP = 48;
+const MAP_REVEAL_PREVIEW_RATIO = 0.28;
+const MAP_REVEAL_TAP_DISTANCE = 6;
+const MAP_REVEAL_MAX_WIDTH = 380;
+const MAP_REVEAL_HEADER_SAFE_GAP = 10;
+const MAP_REVEAL_MAX_CONTENT_HEIGHT = 560;
 
 function getFooterMapHandleRect(): HandleRect | null {
   if (typeof document === 'undefined') return null;
@@ -61,6 +62,12 @@ function getFooterMapHandleRect(): HandleRect | null {
     width: rect.width,
     height: rect.height,
   };
+}
+
+function getIngameHeaderBottom(): number {
+  if (typeof document === 'undefined') return 0;
+  const element = document.querySelector('.ingame-header');
+  return element?.getBoundingClientRect().bottom ?? 0;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -122,20 +129,26 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const [settings, setSettings] = useState(loadUiSettings);
   const [mapSeed] = useState(() => `run-${Date.now()}`);
   const { mapState, setMapState, candidates } = useMapRun(mapSeed);
-  const [mapScrollState, setMapScrollState] = useState<MapScrollState>('closed');
-  const [mapScrollOffset, setMapScrollOffset] = useState(0);
+  const [mapRevealState, setMapRevealState] = useState<MapRevealState>('closed');
+  const [revealedHeight, setRevealedHeight] = useState(0);
   const [footerHandleRect, setFooterHandleRect] = useState<HandleRect | null>(null);
   const [mapDragStartY, setMapDragStartY] = useState<number | null>(null);
-  const [mapDragStartOffset, setMapDragStartOffset] = useState(0);
+  const [mapDragStartHeight, setMapDragStartHeight] = useState(0);
   const viewportSize = useViewportSize();
   const uiScale = Math.min(
     viewportSize.width / INGAME_DESIGN_WIDTH,
     viewportSize.height / INGAME_DESIGN_HEIGHT,
   );
-  const mapLayerWidth = footerHandleRect ? Math.min(viewportSize.width * 0.88, MAP_SCROLL_MAX_WIDTH * uiScale) : 0;
-  const mapOpenOffset = footerHandleRect ? Math.max(footerHandleRect.top - MAP_SCROLL_TOP_GAP * uiScale, 0) : 0;
+  const headerSafeGap = MAP_REVEAL_HEADER_SAFE_GAP * uiScale;
+  const headerBottom = getIngameHeaderBottom();
+  const mapLayerWidth = footerHandleRect ? Math.min(viewportSize.width * 0.88, MAP_REVEAL_MAX_WIDTH * uiScale) : 0;
   const mapLayerLeft = footerHandleRect ? footerHandleRect.left + footerHandleRect.width / 2 - mapLayerWidth / 2 : 0;
-  const mapLayerTop = footerHandleRect ? footerHandleRect.top - mapScrollOffset : 0;
+  const maxRevealHeight = footerHandleRect ? Math.max(footerHandleRect.top - (headerBottom + headerSafeGap), 0) : 0;
+  const clampedRevealHeight = clamp(revealedHeight, 0, maxRevealHeight);
+  const mapLayerTop = footerHandleRect ? footerHandleRect.top - clampedRevealHeight : 0;
+  const mapContentHeight = Math.min(viewportSize.height * 0.66, MAP_REVEAL_MAX_CONTENT_HEIGHT * uiScale);
+  const isMapLayerVisible = footerHandleRect !== null && (mapRevealState !== 'closed' || clampedRevealHeight > 0);
+  const isMapInteractive = maxRevealHeight > 0 && clampedRevealHeight >= maxRevealHeight * 0.7;
   const imageContent = encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
   const bodyText = imageContent ? `${imageContent.before}${imageContent.after}` : '';
   const displayedEncounterId = resultText ? resultEncounterId : encounter?.id;
@@ -176,54 +189,66 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     return nextRect;
   };
 
-  const openMapScroll = () => {
-    const rect = syncFooterHandleRect();
-    if (!rect) return;
-    const nextOpenOffset = Math.max(rect.top - MAP_SCROLL_TOP_GAP * uiScale, 0);
-    setMapScrollOffset(nextOpenOffset);
-    setMapScrollState('open');
+  const getMaxRevealHeight = (rect: HandleRect) => {
+    const safeHeaderBottom = getIngameHeaderBottom() + MAP_REVEAL_HEADER_SAFE_GAP * uiScale;
+    return Math.max(rect.top - safeHeaderBottom, 0);
   };
 
-  const closeMapScroll = () => {
-    setMapScrollOffset(0);
-    setMapScrollState('closed');
+  const getPreviewRevealHeight = (maxHeight: number) => maxHeight * MAP_REVEAL_PREVIEW_RATIO;
+
+  const snapMapRevealTo = (height: number, maxHeight: number) => {
+    const nextHeight = clamp(height, 0, maxHeight);
+    setRevealedHeight(nextHeight);
+    if (nextHeight === 0) setMapRevealState('closed');
+    else if (Math.abs(nextHeight - maxHeight) < 1) setMapRevealState('open');
+    else setMapRevealState('preview');
   };
 
-  const toggleMapScroll = () => {
-    if (mapScrollState === 'open') closeMapScroll();
-    else openMapScroll();
+  const closeMapReveal = () => {
+    setRevealedHeight(0);
+    setMapRevealState('closed');
+    setMapDragStartY(null);
+  };
+
+  const getNearestRevealSnap = (height: number, maxHeight: number) => {
+    const snapPoints = [0, getPreviewRevealHeight(maxHeight), maxHeight];
+    return snapPoints.reduce((nearest, current) => (
+      Math.abs(current - height) < Math.abs(nearest - height) ? current : nearest
+    ), snapPoints[0]);
   };
 
   const handleMapPullPointerDown = (event: { clientY: number; pointerId?: number; currentTarget?: { setPointerCapture?: (pointerId: number) => void } }) => {
     const rect = syncFooterHandleRect();
     if (!rect) return;
     if (event.pointerId !== undefined) event.currentTarget?.setPointerCapture?.(event.pointerId);
-    const nextOpenOffset = Math.max(rect.top - MAP_SCROLL_TOP_GAP * uiScale, 0);
-    const startOffset = mapScrollState === 'open' ? nextOpenOffset : mapScrollOffset;
+    const maxHeight = getMaxRevealHeight(rect);
+    const startHeight = mapRevealState === 'closed' ? 0 : clamp(revealedHeight, 0, maxHeight);
     setMapDragStartY(event.clientY);
-    setMapDragStartOffset(startOffset);
-    setMapScrollOffset(startOffset);
-    setMapScrollState('dragging');
+    setMapDragStartHeight(startHeight);
+    setRevealedHeight(startHeight);
+    setMapRevealState('dragging');
   };
 
   const handleMapPullPointerMove = (event: { clientY: number }) => {
-    if (mapScrollState !== 'dragging' || mapDragStartY === null) return;
+    if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
     const deltaUp = mapDragStartY - event.clientY;
-    setMapScrollOffset(clamp(mapDragStartOffset + deltaUp, 0, mapOpenOffset));
+    setRevealedHeight(clamp(mapDragStartHeight + deltaUp, 0, maxRevealHeight));
   };
 
   const handleMapPullPointerUp = (event: { clientY: number }) => {
-    if (mapScrollState !== 'dragging' || mapDragStartY === null) return;
+    if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
     const moved = Math.abs(event.clientY - mapDragStartY);
+    const maxHeight = getMaxRevealHeight(footerHandleRect);
+    const finalHeight = clamp(mapDragStartHeight + (mapDragStartY - event.clientY), 0, maxHeight);
     setMapDragStartY(null);
 
-    if (moved < MAP_SCROLL_TAP_DISTANCE) {
-      toggleMapScroll();
+    if (moved < MAP_REVEAL_TAP_DISTANCE) {
+      if (mapDragStartHeight > 0) closeMapReveal();
+      else snapMapRevealTo(getPreviewRevealHeight(maxHeight), maxHeight);
       return;
     }
 
-    if (mapOpenOffset > 0 && mapScrollOffset / mapOpenOffset >= MAP_SCROLL_OPEN_THRESHOLD) openMapScroll();
-    else closeMapScroll();
+    snapMapRevealTo(getNearestRevealSnap(finalHeight, maxHeight), maxHeight);
   };
 
   const handleSelectMapCandidate = (candidate: DirectionCandidate) => {
@@ -429,45 +454,49 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
               onPointerDown={handleMapPullPointerDown}
               onPointerMove={handleMapPullPointerMove}
               onPointerUp={handleMapPullPointerUp}
-              onPointerCancel={closeMapScroll}
-              aria-label={mapScrollState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
+              onPointerCancel={closeMapReveal}
+              aria-label={clampedRevealHeight > 0 ? '정찰 지도 접기' : '정찰 지도 펼치기'}
             />
 
             <section
-              className={`ingame-map-scroll-layer is-${mapScrollState}`}
+              className={`ingame-map-reveal-layer is-${mapRevealState}${isMapInteractive ? ' is-interactive' : ''}`}
               style={{
                 '--map-layer-left': `${mapLayerLeft}px`,
                 '--map-layer-top': `${mapLayerTop}px`,
                 '--map-layer-width': `${mapLayerWidth}px`,
+                '--map-reveal-height': `${clampedRevealHeight}px`,
                 '--map-handle-width': `${footerHandleRect.width}px`,
                 '--map-handle-height': `${footerHandleRect.height}px`,
+                '--map-content-height': `${mapContentHeight}px`,
               }}
-              aria-hidden={mapScrollState === 'closed'}
+              aria-hidden={!isMapLayerVisible}
             >
               <button
                 type="button"
-                className="ingame-map-scroll-handle"
+                className="ingame-map-floating-handle"
                 onPointerDown={handleMapPullPointerDown}
                 onPointerMove={handleMapPullPointerMove}
                 onPointerUp={handleMapPullPointerUp}
-                onPointerCancel={closeMapScroll}
-                aria-label={mapScrollState === 'open' ? '정찰 지도 접기' : '정찰 지도 펼치기'}
+                onPointerCancel={closeMapReveal}
+                aria-label={clampedRevealHeight > 0 ? '정찰 지도 접기' : '정찰 지도 펼치기'}
               >
                 <img src={ingameUiAssets.mapPullHandleBar} alt="" aria-hidden="true" draggable={false} />
               </button>
 
-              <div className="ingame-map-paper">
-                <MapPanel
-                  state={mapState}
-                  candidates={candidates}
-                  isDebug={false}
-                  compact
-                  onSelectCandidate={handleSelectMapCandidate}
-                  onNextTravelEncounter={() => setMapState((current) => advanceTravel(current))}
-                  onRecordCurrentNode={() => setMapState((current) => recordCurrentNode(current))}
-                  onCancelTravel={() => setMapState((current) => cancelTravel(current))}
-                  onClose={closeMapScroll}
-                />
+              <div className="ingame-map-reveal-window">
+                <div className="ingame-map-content">
+                  <MapPanel
+                    state={mapState}
+                    candidates={candidates}
+                    isDebug={false}
+                    compact
+                    onSelectCandidate={handleSelectMapCandidate}
+                    onNextTravelEncounter={() => setMapState((current) => advanceTravel(current))}
+                    onRecordCurrentNode={() => setMapState((current) => recordCurrentNode(current))}
+                    onCancelTravel={() => setMapState((current) => cancelTravel(current))}
+                    onClose={closeMapReveal}
+                  />
+                </div>
               </div>
             </section>
           </>
