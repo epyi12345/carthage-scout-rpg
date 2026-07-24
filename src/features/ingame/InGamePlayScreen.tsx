@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AchievementAlbumPopup } from '../../components/AchievementAlbumPopup';
 import type { Encounter, EncounterChoice } from '../../game/types';
 import { MapPanel } from '../map/MapPanel';
@@ -36,7 +36,7 @@ function splitImagePlaceholder(body: string, fallbackPlaceholder?: string) {
 const headerHeartLefts = [100, 127, 154];
 
 
-type MapRevealState = 'closed' | 'dragging' | 'preview' | 'open';
+type MapRevealState = 'closed' | 'dragging' | 'open';
 
 type HandleRect = {
   left: number;
@@ -45,11 +45,10 @@ type HandleRect = {
   height: number;
 };
 
-const MAP_REVEAL_PREVIEW_RATIO = 0.28;
-const MAP_REVEAL_TAP_DISTANCE = 6;
+const MAP_REVEAL_OPEN_THRESHOLD_RATIO = 0.1;
+const MAP_REVEAL_CLOSE_THRESHOLD_RATIO = 0.9;
 const MAP_REVEAL_MAX_WIDTH = 380;
 const MAP_REVEAL_HEADER_SAFE_GAP = 10;
-const MAP_REVEAL_MAX_CONTENT_HEIGHT = 560;
 
 function getFooterMapHandleRect(): HandleRect | null {
   if (typeof document === 'undefined') return null;
@@ -134,6 +133,8 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const [footerHandleRect, setFooterHandleRect] = useState<HandleRect | null>(null);
   const [mapDragStartY, setMapDragStartY] = useState<number | null>(null);
   const [mapDragStartHeight, setMapDragStartHeight] = useState(0);
+  const [mapUiContentHeight, setMapUiContentHeight] = useState(0);
+  const mapContentRef = useRef<HTMLDivElement | null>(null);
   const viewportSize = useViewportSize();
   const uiScale = Math.min(
     viewportSize.width / INGAME_DESIGN_WIDTH,
@@ -143,12 +144,12 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const headerBottom = getIngameHeaderBottom();
   const mapLayerWidth = footerHandleRect ? Math.min(viewportSize.width * 0.88, MAP_REVEAL_MAX_WIDTH * uiScale) : 0;
   const mapLayerLeft = footerHandleRect ? footerHandleRect.left + footerHandleRect.width / 2 - mapLayerWidth / 2 : 0;
-  const maxRevealHeight = footerHandleRect ? Math.max(footerHandleRect.top - (headerBottom + headerSafeGap), 0) : 0;
-  const clampedRevealHeight = clamp(revealedHeight, 0, maxRevealHeight);
+  const availableHeightUntilHeader = footerHandleRect ? Math.max(footerHandleRect.top - (headerBottom + headerSafeGap), 0) : 0;
+  const finalOpenHeight = Math.min(mapUiContentHeight, availableHeightUntilHeader);
+  const clampedRevealHeight = clamp(revealedHeight, 0, finalOpenHeight);
   const mapLayerTop = footerHandleRect ? footerHandleRect.top - clampedRevealHeight : 0;
-  const mapContentHeight = Math.min(viewportSize.height * 0.66, MAP_REVEAL_MAX_CONTENT_HEIGHT * uiScale);
   const isMapLayerVisible = footerHandleRect !== null && (mapRevealState !== 'closed' || clampedRevealHeight > 0);
-  const isMapInteractive = maxRevealHeight > 0 && clampedRevealHeight >= maxRevealHeight * 0.7;
+  const isMapInteractive = finalOpenHeight > 0 && clampedRevealHeight >= finalOpenHeight * 0.98;
   const imageContent = encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
   const bodyText = imageContent ? `${imageContent.before}${imageContent.after}` : '';
   const displayedEncounterId = resultText ? resultEncounterId : encounter?.id;
@@ -183,25 +184,53 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     };
   }, [viewportSize.width, viewportSize.height]);
 
+  useEffect(() => {
+    const element = mapContentRef.current;
+    if (!element) return;
+
+    const updateMapUiContentHeight = () => {
+      setMapUiContentHeight(element.scrollHeight);
+    };
+
+    updateMapUiContentHeight();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateMapUiContentHeight);
+      window.addEventListener('orientationchange', updateMapUiContentHeight);
+      return () => {
+        window.removeEventListener('resize', updateMapUiContentHeight);
+        window.removeEventListener('orientationchange', updateMapUiContentHeight);
+      };
+    }
+
+    const observer = new ResizeObserver(updateMapUiContentHeight);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [footerHandleRect, viewportSize.width, viewportSize.height]);
+
   const syncFooterHandleRect = () => {
     const nextRect = getFooterMapHandleRect();
     if (nextRect) setFooterHandleRect(nextRect);
     return nextRect;
   };
 
-  const getMaxRevealHeight = (rect: HandleRect) => {
+  const measureMapUiContentHeight = () => mapContentRef.current?.scrollHeight ?? mapUiContentHeight;
+
+  const getAvailableHeightUntilHeader = (rect: HandleRect) => {
     const safeHeaderBottom = getIngameHeaderBottom() + MAP_REVEAL_HEADER_SAFE_GAP * uiScale;
     return Math.max(rect.top - safeHeaderBottom, 0);
   };
 
-  const getPreviewRevealHeight = (maxHeight: number) => maxHeight * MAP_REVEAL_PREVIEW_RATIO;
+  const getFinalOpenHeight = (rect: HandleRect) => Math.min(
+    measureMapUiContentHeight(),
+    getAvailableHeightUntilHeader(rect),
+  );
 
-  const snapMapRevealTo = (height: number, maxHeight: number) => {
-    const nextHeight = clamp(height, 0, maxHeight);
+  const snapMapRevealTo = (height: number, openHeight: number) => {
+    const nextHeight = clamp(height, 0, openHeight);
     setRevealedHeight(nextHeight);
-    if (nextHeight === 0) setMapRevealState('closed');
-    else if (Math.abs(nextHeight - maxHeight) < 1) setMapRevealState('open');
-    else setMapRevealState('preview');
+    setMapRevealState(nextHeight >= openHeight && openHeight > 0 ? 'open' : 'closed');
   };
 
   const closeMapReveal = () => {
@@ -210,19 +239,16 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     setMapDragStartY(null);
   };
 
-  const getNearestRevealSnap = (height: number, maxHeight: number) => {
-    const snapPoints = [0, getPreviewRevealHeight(maxHeight), maxHeight];
-    return snapPoints.reduce((nearest, current) => (
-      Math.abs(current - height) < Math.abs(nearest - height) ? current : nearest
-    ), snapPoints[0]);
+  const openMapReveal = (openHeight: number) => {
+    snapMapRevealTo(openHeight, openHeight);
   };
 
   const handleMapPullPointerDown = (event: { clientY: number; pointerId?: number; currentTarget?: { setPointerCapture?: (pointerId: number) => void } }) => {
     const rect = syncFooterHandleRect();
     if (!rect) return;
     if (event.pointerId !== undefined) event.currentTarget?.setPointerCapture?.(event.pointerId);
-    const maxHeight = getMaxRevealHeight(rect);
-    const startHeight = mapRevealState === 'closed' ? 0 : clamp(revealedHeight, 0, maxHeight);
+    const openHeight = getFinalOpenHeight(rect);
+    const startHeight = mapRevealState === 'open' ? openHeight : clamp(revealedHeight, 0, openHeight);
     setMapDragStartY(event.clientY);
     setMapDragStartHeight(startHeight);
     setRevealedHeight(startHeight);
@@ -232,23 +258,27 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const handleMapPullPointerMove = (event: { clientY: number }) => {
     if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
     const deltaUp = mapDragStartY - event.clientY;
-    setRevealedHeight(clamp(mapDragStartHeight + deltaUp, 0, maxRevealHeight));
+    const openHeight = getFinalOpenHeight(footerHandleRect);
+    setRevealedHeight(clamp(mapDragStartHeight + deltaUp, 0, openHeight));
   };
 
   const handleMapPullPointerUp = (event: { clientY: number }) => {
     if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
-    const moved = Math.abs(event.clientY - mapDragStartY);
-    const maxHeight = getMaxRevealHeight(footerHandleRect);
-    const finalHeight = clamp(mapDragStartHeight + (mapDragStartY - event.clientY), 0, maxHeight);
+    const openHeight = getFinalOpenHeight(footerHandleRect);
+    const finalHeight = clamp(mapDragStartHeight + (mapDragStartY - event.clientY), 0, openHeight);
+    const isClosingFromOpen = mapDragStartHeight >= openHeight * 0.98;
     setMapDragStartY(null);
 
-    if (moved < MAP_REVEAL_TAP_DISTANCE) {
-      if (mapDragStartHeight > 0) closeMapReveal();
-      else snapMapRevealTo(getPreviewRevealHeight(maxHeight), maxHeight);
+    if (isClosingFromOpen) {
+      const closeThreshold = openHeight * MAP_REVEAL_CLOSE_THRESHOLD_RATIO;
+      if (finalHeight <= closeThreshold) closeMapReveal();
+      else openMapReveal(openHeight);
       return;
     }
 
-    snapMapRevealTo(getNearestRevealSnap(finalHeight, maxHeight), maxHeight);
+    const openThreshold = openHeight * MAP_REVEAL_OPEN_THRESHOLD_RATIO;
+    if (finalHeight >= openThreshold) openMapReveal(openHeight);
+    else closeMapReveal();
   };
 
   const handleSelectMapCandidate = (candidate: DirectionCandidate) => {
@@ -467,7 +497,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
                 '--map-reveal-height': `${clampedRevealHeight}px`,
                 '--map-handle-width': `${footerHandleRect.width}px`,
                 '--map-handle-height': `${footerHandleRect.height}px`,
-                '--map-content-height': `${mapContentHeight}px`,
               }}
               aria-hidden={!isMapLayerVisible}
             >
@@ -484,7 +513,10 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
               </button>
 
               <div className="ingame-map-reveal-window">
-                <div className="ingame-map-content">
+                <div
+                  ref={mapContentRef}
+                  className={`ingame-map-content${isMapInteractive ? ' is-interactive' : ''}`}
+                >
                   <MapPanel
                     state={mapState}
                     candidates={candidates}

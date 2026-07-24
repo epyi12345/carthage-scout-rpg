@@ -2,6 +2,7 @@ declare module 'react' {
   export const StrictMode: (props: { children?: unknown }) => unknown;
   export function useEffect(effect: () => void | (() => void), deps?: unknown[]): void;
   export function useState<T>(initial: T | (() => T)): [T, (value: T | ((current: T) => T)) => void];
+  export function useRef<T>(initial: T): { current: T };
   export type ChangeEvent<T = Element> = { target: T };
 }
 
