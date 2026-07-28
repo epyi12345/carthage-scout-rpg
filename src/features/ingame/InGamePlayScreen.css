@@ -403,13 +403,21 @@
   user-select: none;
 }
 
+.ingame-map-interaction-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 70;
+}
+
 .ingame-map-pull-hit-area {
-  position: fixed;
+  position: absolute;
   left: var(--map-hit-left);
   top: var(--map-hit-top);
   width: var(--map-hit-width);
   height: var(--map-hit-height);
-  min-height: 0;
+  min-height: 48px;
   border: 0;
   border-radius: 0;
   padding: 0;
@@ -418,6 +426,10 @@
   box-shadow: none;
   cursor: grab;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: auto;
   opacity: 0;
   z-index: 80;
 }
@@ -429,7 +441,7 @@
 }
 
 .ingame-map-reveal-layer {
-  position: fixed;
+  position: absolute;
   left: var(--map-layer-left);
   top: var(--map-layer-top);
   width: var(--map-layer-width);
@@ -472,6 +484,9 @@
   box-shadow: none;
   cursor: grab;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .ingame-map-floating-handle:active {
@@ -488,6 +503,8 @@
   object-fit: fill;
   pointer-events: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
 }
 
 .ingame-map-reveal-window {
@@ -518,6 +535,8 @@
   right: 0;
   bottom: 0;
   width: 100%;
+  height: auto;
+  min-height: max-content;
   margin: 0;
   padding: 0 10px 20px;
   overflow-y: auto;

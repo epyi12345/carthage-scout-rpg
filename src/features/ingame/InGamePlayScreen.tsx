@@ -45,29 +45,40 @@ type HandleRect = {
   height: number;
 };
 
+type MapGeometry = {
+  stageWidth: number;
+  handle: HandleRect;
+  headerBottom: number;
+};
+
+type MapDragSession = {
+  active: boolean;
+  pointerId: number | null;
+  startClientY: number;
+  startHeight: number;
+  lastClientY: number;
+  lastHeight: number;
+  openHeight: number;
+  startedOpen: boolean;
+};
+
+type MapPointerEvent = {
+  clientY: number;
+  pointerId: number;
+  preventDefault: () => void;
+  stopPropagation: () => void;
+  currentTarget: {
+    setPointerCapture: (pointerId: number) => void;
+    releasePointerCapture?: (pointerId: number) => void;
+  };
+};
+
 const MAP_REVEAL_OPEN_THRESHOLD_RATIO = 0.1;
 const MAP_REVEAL_CLOSE_THRESHOLD_RATIO = 0.9;
 const MAP_REVEAL_MAX_WIDTH = 380;
 const MAP_REVEAL_HEADER_SAFE_GAP = 10;
-
-function getFooterMapHandleRect(): HandleRect | null {
-  if (typeof document === 'undefined') return null;
-  const element = document.querySelector('.footer-map-handle');
-  if (!element) return null;
-  const rect = element.getBoundingClientRect();
-  return {
-    left: rect.left,
-    top: rect.top,
-    width: rect.width,
-    height: rect.height,
-  };
-}
-
-function getIngameHeaderBottom(): number {
-  if (typeof document === 'undefined') return 0;
-  const element = document.querySelector('.ingame-header');
-  return element?.getBoundingClientRect().bottom ?? 0;
-}
+const MAP_HIT_AREA_MIN_HEIGHT = 52;
+const MAP_HIT_AREA_MIN_WIDTH = 96;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -130,24 +141,43 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   const { mapState, setMapState, candidates } = useMapRun(mapSeed);
   const [mapRevealState, setMapRevealState] = useState<MapRevealState>('closed');
   const [revealedHeight, setRevealedHeight] = useState(0);
-  const [footerHandleRect, setFooterHandleRect] = useState<HandleRect | null>(null);
-  const [mapDragStartY, setMapDragStartY] = useState<number | null>(null);
-  const [mapDragStartHeight, setMapDragStartHeight] = useState(0);
+  const [mapGeometry, setMapGeometry] = useState<MapGeometry | null>(null);
   const [mapUiContentHeight, setMapUiContentHeight] = useState(0);
+  const ingameStageRef = useRef<HTMLElement | null>(null);
+  const ingameHeaderRef = useRef<HTMLElement | null>(null);
+  const footerMapHandleRef = useRef<HTMLImageElement | null>(null);
   const mapContentRef = useRef<HTMLDivElement | null>(null);
+  const revealedHeightRef = useRef(0);
+  const mapRevealStateRef = useRef<MapRevealState>('closed');
+  const mapDragSessionRef = useRef<MapDragSession>({
+    active: false,
+    pointerId: null,
+    startClientY: 0,
+    startHeight: 0,
+    lastClientY: 0,
+    lastHeight: 0,
+    openHeight: 0,
+    startedOpen: false,
+  });
   const viewportSize = useViewportSize();
   const uiScale = Math.min(
     viewportSize.width / INGAME_DESIGN_WIDTH,
     viewportSize.height / INGAME_DESIGN_HEIGHT,
   );
-  const headerSafeGap = MAP_REVEAL_HEADER_SAFE_GAP * uiScale;
-  const headerBottom = getIngameHeaderBottom();
-  const mapLayerWidth = footerHandleRect ? Math.min(viewportSize.width * 0.88, MAP_REVEAL_MAX_WIDTH * uiScale) : 0;
+  const footerHandleRect = mapGeometry?.handle ?? null;
+  const mapLayerWidth = mapGeometry ? Math.min(mapGeometry.stageWidth * 0.88, MAP_REVEAL_MAX_WIDTH * uiScale) : 0;
   const mapLayerLeft = footerHandleRect ? footerHandleRect.left + footerHandleRect.width / 2 - mapLayerWidth / 2 : 0;
-  const availableHeightUntilHeader = footerHandleRect ? Math.max(footerHandleRect.top - (headerBottom + headerSafeGap), 0) : 0;
+  const availableHeightUntilHeader = mapGeometry
+    ? Math.max(mapGeometry.handle.top - (mapGeometry.headerBottom + MAP_REVEAL_HEADER_SAFE_GAP * uiScale), 0)
+    : 0;
   const finalOpenHeight = Math.min(mapUiContentHeight, availableHeightUntilHeader);
   const clampedRevealHeight = clamp(revealedHeight, 0, finalOpenHeight);
   const mapLayerTop = footerHandleRect ? footerHandleRect.top - clampedRevealHeight : 0;
+  const hitAreaWidth = footerHandleRect ? Math.max(footerHandleRect.width, MAP_HIT_AREA_MIN_WIDTH) : 0;
+  const hitAreaHeight = footerHandleRect ? Math.max(footerHandleRect.height, MAP_HIT_AREA_MIN_HEIGHT) : 0;
+  const hitAreaLeft = footerHandleRect ? footerHandleRect.left + footerHandleRect.width / 2 - hitAreaWidth / 2 : 0;
+  const hitAreaTop = footerHandleRect ? footerHandleRect.top + footerHandleRect.height / 2 - hitAreaHeight / 2 : 0;
+  const isMapReady = mapGeometry !== null && mapUiContentHeight > 0 && finalOpenHeight > 0;
   const isMapLayerVisible = footerHandleRect !== null && (mapRevealState !== 'closed' || clampedRevealHeight > 0);
   const isMapInteractive = finalOpenHeight > 0 && clampedRevealHeight >= finalOpenHeight * 0.98;
   const imageContent = encounter ? splitImagePlaceholder(encounter.body, encounter.imagePlaceholder) : null;
@@ -171,16 +201,44 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     saveUiSettings(settings);
   }, [settings]);
 
-  useEffect(() => {
-    const updateHandleRect = () => setFooterHandleRect(getFooterMapHandleRect());
+  const syncMapGeometry = () => {
+    const stage = ingameStageRef.current;
+    const header = ingameHeaderRef.current;
+    const handle = footerMapHandleRef.current;
+    if (!stage || !header || !handle) return null;
 
-    updateHandleRect();
-    window.addEventListener('resize', updateHandleRect);
-    window.addEventListener('orientationchange', updateHandleRect);
+    const stageRect = stage.getBoundingClientRect();
+    const headerRect = header.getBoundingClientRect();
+    const handleRect = handle.getBoundingClientRect();
+    const nextGeometry: MapGeometry = {
+      stageWidth: stageRect.width,
+      headerBottom: headerRect.bottom - stageRect.top,
+      handle: {
+        left: handleRect.left - stageRect.left,
+        top: handleRect.top - stageRect.top,
+        width: handleRect.width,
+        height: handleRect.height,
+      },
+    };
+    setMapGeometry(nextGeometry);
+    return nextGeometry;
+  };
+
+  useEffect(() => {
+    const updateGeometry = () => syncMapGeometry();
+    const visualViewport = window.visualViewport;
+
+    updateGeometry();
+    window.addEventListener('resize', updateGeometry);
+    window.addEventListener('orientationchange', updateGeometry);
+    visualViewport?.addEventListener('resize', updateGeometry);
+    visualViewport?.addEventListener('scroll', updateGeometry);
 
     return () => {
-      window.removeEventListener('resize', updateHandleRect);
-      window.removeEventListener('orientationchange', updateHandleRect);
+      window.removeEventListener('resize', updateGeometry);
+      window.removeEventListener('orientationchange', updateGeometry);
+      visualViewport?.removeEventListener('resize', updateGeometry);
+      visualViewport?.removeEventListener('scroll', updateGeometry);
     };
   }, [viewportSize.width, viewportSize.height]);
 
@@ -189,7 +247,8 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     if (!element) return;
 
     const updateMapUiContentHeight = () => {
-      setMapUiContentHeight(element.scrollHeight);
+      const nextHeight = Math.max(element.scrollHeight, element.getBoundingClientRect().height);
+      setMapUiContentHeight((current) => current === nextHeight ? current : nextHeight);
     };
 
     updateMapUiContentHeight();
@@ -207,78 +266,115 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [footerHandleRect, viewportSize.width, viewportSize.height]);
+  }, [mapGeometry?.stageWidth, viewportSize.width, viewportSize.height]);
 
-  const syncFooterHandleRect = () => {
-    const nextRect = getFooterMapHandleRect();
-    if (nextRect) setFooterHandleRect(nextRect);
-    return nextRect;
-  };
-
-  const measureMapUiContentHeight = () => mapContentRef.current?.scrollHeight ?? mapUiContentHeight;
-
-  const getAvailableHeightUntilHeader = (rect: HandleRect) => {
-    const safeHeaderBottom = getIngameHeaderBottom() + MAP_REVEAL_HEADER_SAFE_GAP * uiScale;
-    return Math.max(rect.top - safeHeaderBottom, 0);
-  };
-
-  const getFinalOpenHeight = (rect: HandleRect) => Math.min(
-    measureMapUiContentHeight(),
-    getAvailableHeightUntilHeader(rect),
-  );
+  useEffect(() => {
+    if (mapRevealStateRef.current !== 'open') return;
+    revealedHeightRef.current = finalOpenHeight;
+    setRevealedHeight(finalOpenHeight);
+  }, [finalOpenHeight]);
 
   const snapMapRevealTo = (height: number, openHeight: number) => {
     const nextHeight = clamp(height, 0, openHeight);
+    revealedHeightRef.current = nextHeight;
+    mapRevealStateRef.current = nextHeight >= openHeight && openHeight > 0 ? 'open' : 'closed';
     setRevealedHeight(nextHeight);
-    setMapRevealState(nextHeight >= openHeight && openHeight > 0 ? 'open' : 'closed');
+    setMapRevealState(mapRevealStateRef.current);
   };
 
   const closeMapReveal = () => {
+    revealedHeightRef.current = 0;
+    mapRevealStateRef.current = 'closed';
     setRevealedHeight(0);
     setMapRevealState('closed');
-    setMapDragStartY(null);
   };
 
   const openMapReveal = (openHeight: number) => {
     snapMapRevealTo(openHeight, openHeight);
   };
 
-  const handleMapPullPointerDown = (event: { clientY: number; pointerId?: number; currentTarget?: { setPointerCapture?: (pointerId: number) => void } }) => {
-    const rect = syncFooterHandleRect();
-    if (!rect) return;
-    if (event.pointerId !== undefined) event.currentTarget?.setPointerCapture?.(event.pointerId);
-    const openHeight = getFinalOpenHeight(rect);
-    const startHeight = mapRevealState === 'open' ? openHeight : clamp(revealedHeight, 0, openHeight);
-    setMapDragStartY(event.clientY);
-    setMapDragStartHeight(startHeight);
+  const handleMapPullPointerDown = (event: MapPointerEvent) => {
+    if (!isMapReady) return;
+    event.preventDefault();
+    event.stopPropagation();
+    syncMapGeometry();
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // WebKit may reject capture during viewport changes; the active session still tracks the gesture.
+    }
+    const startHeight = mapRevealStateRef.current === 'open'
+      ? finalOpenHeight
+      : clamp(revealedHeightRef.current, 0, finalOpenHeight);
+    mapDragSessionRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startClientY: event.clientY,
+      startHeight,
+      lastClientY: event.clientY,
+      lastHeight: startHeight,
+      openHeight: finalOpenHeight,
+      startedOpen: startHeight >= finalOpenHeight * 0.98,
+    };
+    revealedHeightRef.current = startHeight;
+    mapRevealStateRef.current = 'dragging';
     setRevealedHeight(startHeight);
     setMapRevealState('dragging');
   };
 
-  const handleMapPullPointerMove = (event: { clientY: number }) => {
-    if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
-    const deltaUp = mapDragStartY - event.clientY;
-    const openHeight = getFinalOpenHeight(footerHandleRect);
-    setRevealedHeight(clamp(mapDragStartHeight + deltaUp, 0, openHeight));
+  const handleMapPullPointerMove = (event: MapPointerEvent) => {
+    const session = mapDragSessionRef.current;
+    if (!session.active || session.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    const nextHeight = clamp(
+      session.startHeight + (session.startClientY - event.clientY),
+      0,
+      session.openHeight,
+    );
+    session.lastClientY = event.clientY;
+    session.lastHeight = nextHeight;
+    revealedHeightRef.current = nextHeight;
+    setRevealedHeight(nextHeight);
   };
 
-  const handleMapPullPointerUp = (event: { clientY: number }) => {
-    if (mapRevealState !== 'dragging' || mapDragStartY === null || !footerHandleRect) return;
-    const openHeight = getFinalOpenHeight(footerHandleRect);
-    const finalHeight = clamp(mapDragStartHeight + (mapDragStartY - event.clientY), 0, openHeight);
-    const isClosingFromOpen = mapDragStartHeight >= openHeight * 0.98;
-    setMapDragStartY(null);
+  const finishMapDrag = (pointerId?: number, clientY?: number) => {
+    const session = mapDragSessionRef.current;
+    if (!session.active) return;
+    if (pointerId !== undefined && session.pointerId !== null && pointerId !== session.pointerId) return;
 
-    if (isClosingFromOpen) {
-      const closeThreshold = openHeight * MAP_REVEAL_CLOSE_THRESHOLD_RATIO;
-      if (finalHeight <= closeThreshold) closeMapReveal();
-      else openMapReveal(openHeight);
+    const finalHeight = clientY === undefined
+      ? session.lastHeight
+      : clamp(
+        session.startHeight + (session.startClientY - clientY),
+        0,
+        session.openHeight,
+      );
+    session.active = false;
+    session.pointerId = null;
+
+    if (session.openHeight <= 0) {
+      closeMapReveal();
       return;
     }
 
-    const openThreshold = openHeight * MAP_REVEAL_OPEN_THRESHOLD_RATIO;
-    if (finalHeight >= openThreshold) openMapReveal(openHeight);
+    if (session.startedOpen) {
+      const closeDragDistance = session.openHeight - finalHeight;
+      if (closeDragDistance >= session.openHeight * (1 - MAP_REVEAL_CLOSE_THRESHOLD_RATIO)) closeMapReveal();
+      else openMapReveal(session.openHeight);
+      return;
+    }
+
+    if (finalHeight >= session.openHeight * MAP_REVEAL_OPEN_THRESHOLD_RATIO) openMapReveal(session.openHeight);
     else closeMapReveal();
+  };
+
+  const handleMapPullPointerUp = (event: MapPointerEvent) => {
+    finishMapDrag(event.pointerId, event.clientY);
+    try {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // Capture may already be released after pointercancel/lostpointercapture.
+    }
   };
 
   const handleSelectMapCandidate = (candidate: DirectionCandidate) => {
@@ -288,6 +384,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
   return (
     <main className="ingame-play-screen">
       <section
+        ref={ingameStageRef}
         className="ingame-stage"
         aria-label="인게임 화면"
       >
@@ -317,7 +414,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             }}
           >
             <div className="ingame-ui-layout">
-        <header className="ingame-header">
+        <header ref={ingameHeaderRef} className="ingame-header">
           <div className="ingame-top-ornament-wrap">
             <img
               className="ingame-top-ornament"
@@ -452,6 +549,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
 
         <footer className="ingame-footer" aria-hidden="true">
           <img
+            ref={footerMapHandleRef}
             className="footer-map-handle"
             src={ingameUiAssets.mapPullHandleBar}
             alt=""
@@ -470,21 +568,27 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         </footer>
             </div>
 
+          </div>
+        </div>
+
+        <div className="ingame-map-interaction-overlay">
         {footerHandleRect && (
           <>
             <button
               type="button"
               className="ingame-map-pull-hit-area"
               style={{
-                '--map-hit-left': `${footerHandleRect.left}px`,
-                '--map-hit-top': `${footerHandleRect.top}px`,
-                '--map-hit-width': `${footerHandleRect.width}px`,
-                '--map-hit-height': `${footerHandleRect.height}px`,
+                '--map-hit-left': `${hitAreaLeft}px`,
+                '--map-hit-top': `${hitAreaTop}px`,
+                '--map-hit-width': `${hitAreaWidth}px`,
+                '--map-hit-height': `${hitAreaHeight}px`,
               }}
+              disabled={!isMapReady}
               onPointerDown={handleMapPullPointerDown}
               onPointerMove={handleMapPullPointerMove}
               onPointerUp={handleMapPullPointerUp}
-              onPointerCancel={closeMapReveal}
+              onPointerCancel={(event: MapPointerEvent) => finishMapDrag(event.pointerId)}
+              onLostPointerCapture={(event: MapPointerEvent) => finishMapDrag(event.pointerId)}
               aria-label={clampedRevealHeight > 0 ? '정찰 지도 접기' : '정찰 지도 펼치기'}
             />
 
@@ -506,7 +610,8 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
                 onPointerDown={handleMapPullPointerDown}
                 onPointerMove={handleMapPullPointerMove}
                 onPointerUp={handleMapPullPointerUp}
-                onPointerCancel={closeMapReveal}
+                onPointerCancel={(event: MapPointerEvent) => finishMapDrag(event.pointerId)}
+                onLostPointerCapture={(event: MapPointerEvent) => finishMapDrag(event.pointerId)}
                 aria-label={clampedRevealHeight > 0 ? '정찰 지도 접기' : '정찰 지도 펼치기'}
               >
                 <img src={ingameUiAssets.mapPullHandleBar} alt="" aria-hidden="true" draggable={false} />
@@ -533,8 +638,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
             </section>
           </>
         )}
-
-          </div>
         </div>
       </section>
 
