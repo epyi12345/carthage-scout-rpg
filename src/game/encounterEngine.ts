@@ -1,5 +1,5 @@
 import { evaluateEnding } from './endingEvaluator';
-import { getNeighbors, getSystemTile, placePlayerMarkerOnMap, revealTile, updatePlayerTile } from './map';
+import { getNeighbors, getSystemTile, placePlayerMarkerOnMap, revealTile, updatePlayerTile } from './mapGenerator';
 import { clamp, startNewGame as createGameState, syncGameStateAliases } from './gameState';
 import type { Direction, EncounterChoice, EncounterConditions, EncounterEffects, GameState, RecordTileData, RelationshipScore, TileMarkState } from './types';
 

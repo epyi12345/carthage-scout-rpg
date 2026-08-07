@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { allEncounters, mvpEncounterCatalog, v02SampleEncounters } from '../game/encounter';
-import { applyEffects, patchState } from '../game/engine';
-import { clearSave } from '../game/save';
+import { applyEffects, patchState } from '../game/encounterEngine';
+import { clearSave } from '../game/saveLoad';
 import { traitCatalog, traitIds } from '../game/traits';
 import type { GameState, TraitId } from '../game/types';
 

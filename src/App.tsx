@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { newGame } from './game/engine';
-import { hasSave, loadGame, saveGame } from './game/save';
+import { newGame } from './game/encounterEngine';
+import { hasSave, loadGame, saveGame } from './game/saveLoad';
 import type { GameState } from './game/types';
 import { GameScreen } from './screens/GameScreen';
 import { MapTestPage } from './features/mapTest/MapTestPage';

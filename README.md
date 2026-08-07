@@ -7,7 +7,7 @@
 ## 실행 방법
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -88,23 +88,27 @@ npm run preview
 ## 주요 파일
 
 ```text
-data/
-  encounters/mvp.json            # MVP 이동 중 발생하는 JSON 인카운터
+src/content/
+  encounters/mvp.json            # 현재 실행되는 MVP 인카운터 카탈로그
+  encounters/tutorial.json       # 튜토리얼 인카운터
   encounters/samples-v0.2.json   # 확장 구조 샘플 인카운터
-  items.json                     # 아이템 플레이스홀더
-  traits.json                    # 특성 플레이스홀더
+  items.json                     # 아이템 카탈로그
+  traits.json                    # 특성 카탈로그
 src/game/
-  types.ts                       # GameState, MapTile, PlayerState, Encounter, Choice, Item, Ending 타입
-  map.ts                         # 시드 기반 7x7 시스템/플레이어 지도 생성 및 타일 공개
-  engine.ts                      # 이동/관측/기록/휴식/복귀/인카운터 효과 적용
-  ending.ts                      # 엔딩 평가
-  save.ts                        # localStorage 저장/로드
-src/components/
-  MapView.tsx                    # 모바일 그리드 지도
-  DevPanel.tsx                   # 테스트 패널
+  types.ts                       # 현재 GameState 및 게임 도메인 타입
+  mapGenerator.ts                # 시드 기반 7x7 시스템/플레이어 지도 생성
+  encounterEngine.ts             # 행동 및 인카운터 효과 적용
+  endingEvaluator.ts             # 엔딩 평가
+  saveLoad.ts                    # localStorage 저장/로드
+src/features/map/
+  MapPanel.tsx                   # 인게임과 map-test가 공유하는 방향 지도 UI
+  mapGenerator.ts                # 방향 지도 생성
+  mapLogic.ts                    # 방향 후보 및 이동 처리
 src/screens/
   GameScreen.tsx                 # 플레이 가능한 세로 슬라이스
 ```
+
+코드의 현재 사용 여부와 후속 정리 경계는 [MVP code inventory](docs/architecture/code-inventory.md)에 기록합니다. 루트 `data/`의 미사용 초안은 실행 데이터와 혼동되지 않도록 `docs/drafts/data/`로 격리했습니다.
 
 ## Encounter System v0.2 문서
 

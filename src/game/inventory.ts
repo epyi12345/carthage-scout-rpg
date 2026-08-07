@@ -1,4 +1,4 @@
-import items from '../../data/items.json';
+import items from '../content/items.json';
 import type { GameState, Item } from './types';
 
 export const itemCatalog = items as Item[];

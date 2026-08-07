@@ -1,4 +1,4 @@
-import traitData from '../../data/traits.json';
+import traitData from '../content/traits.json';
 import type { TraitDefinition, TraitId } from './types';
 
 export const traitCatalog = traitData as TraitDefinition[];
