@@ -222,20 +222,20 @@ export function createPlayerMap(systemMap: MapTile[], startTileId: string): Play
 }
 
 export function getSystemTile(state: GameState, id: string): MapTile | undefined {
-  return state.systemMap.find((tile) => tile.id === id);
+  return state.map.systemTiles.find((tile) => tile.id === id);
 }
 
 export function getPlayerTile(state: GameState, id: string): PlayerMapTile | undefined {
-  return state.playerMap.find((tile) => tile.id === id);
+  return state.map.playerTiles.find((tile) => tile.id === id);
 }
 
 export function updatePlayerTile(state: GameState, id: string, patch: Partial<PlayerMapTile>): PlayerMapTile[] {
-  return state.playerMap.map((tile) => tile.id === id ? { ...tile, ...patch } : tile);
+  return state.map.playerTiles.map((tile) => tile.id === id ? { ...tile, ...patch } : tile);
 }
 
 export function revealTile(state: GameState, id: string, stateValue: TileState): PlayerMapTile[] {
   const systemTile = getSystemTile(state, id);
-  if (!systemTile) return state.playerMap;
+  if (!systemTile) return state.map.playerTiles;
   const existing = getPlayerTile(state, id);
   const nextState = rankTileState(stateValue) > rankTileState(existing?.playerKnowledgeState ?? existing?.state ?? 'unknown') ? stateValue : existing?.playerKnowledgeState ?? existing?.state ?? stateValue;
   const observedHint = { terrainHint: terrainHint(systemTile.terrainType), riskBand: riskBand(systemTile.trueRiskLevel), passabilityHint: passabilityHint(systemTile.passability) };
@@ -388,10 +388,14 @@ export function createParchmentPlayerMap(systemMap: import('./types').SystemMap,
 }
 
 export function syncParchmentVisibilityForPosition(state: GameState): GameState {
-  const systemMap = state.parchmentSystemMap ?? generateParchmentSystemMap(state.seed || state.mapSeed || 'mvp');
-  const basePlayerMap = state.parchmentPlayerMap ?? createParchmentPlayerMap(systemMap, state.player?.campPosition ?? state.startLocation ?? tileId(Math.floor((state.mapSize ?? MVP_MAP_SIZE) / 2), (state.mapSize ?? MVP_MAP_SIZE) - 1), state.mapSize ?? MVP_MAP_SIZE);
-  const position = tileToParchmentPosition(state.player?.position ?? state.playerPosition ?? state.location, state.mapSize ?? MVP_MAP_SIZE);
-  return { ...state, parchmentSystemMap: systemMap, parchmentPlayerMap: revealParchmentArea(systemMap, basePlayerMap, position.x, position.y, 15, 'movement') };
+  const position = tileToParchmentPosition(state.player.position, state.map.size);
+  return {
+    ...state,
+    map: {
+      ...state.map,
+      parchmentPlayer: revealParchmentArea(state.map.parchmentSystem, state.map.parchmentPlayer, position.x, position.y, 15, 'movement'),
+    },
+  };
 }
 
 export function placePlayerMarkerOnMap(playerMap: import('./types').PlayerMap, x: number, y: number, type: import('./types').PlayerMarkerType = 'return', note?: string): import('./types').PlayerMap {

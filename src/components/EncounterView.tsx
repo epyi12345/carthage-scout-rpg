@@ -11,7 +11,7 @@ export function EncounterView({ encounter, state, onChoose }: Props) {
       <h1>{encounter.title}</h1>
       <div className="story-body">{(encounter.description ?? encounter.body).split('\n').map((line, index) => line ? <p key={index}>{line}</p> : <br key={index} />)}</div>
       {encounter.description && <p className="muted encounter-body">{encounter.body}</p>}
-      <LogPanel entries={state.lastLog.slice(0, 3)} feedback={state.feedbackMessage} title="최근 정찰 기록" />
+      <LogPanel entries={state.logs.map((entry) => entry.message).slice(0, 3)} feedback={state.feedbackMessage} title="최근 정찰 기록" />
       <ChoicePanel
         title="대응 선택"
         actions={encounter.choices.map((choice) => ({

@@ -1,6 +1,7 @@
-import { createParchmentPlayerMap, createPlayerMap, generateParchmentSystemMap, generateSystemMap, syncParchmentVisibilityForPosition, tileId } from './mapGenerator';
-import type { GamePhase, GameState, PlayerState } from './types';
+import { createParchmentPlayerMap, createPlayerMap, generateParchmentSystemMap, generateSystemMap, tileId } from './mapGenerator';
+import type { GameLog, GamePhase, GameState, PlayerState } from './types';
 
+export const CURRENT_SCHEMA_VERSION = 2;
 export const DEFAULT_MAX_DAYS = 21;
 
 export function clamp(value: number, min: number, max: number): number {
@@ -11,58 +12,31 @@ function createRunId(seed: string): string {
   return `${seed}-${Date.now().toString(36)}`;
 }
 
-export function syncGameStateAliases(state: GameState): GameState {
-  const parchmentReadyState = syncParchmentVisibilityForPosition(state);
-  state = parchmentReadyState;
-  const observedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'observed').map((tile) => tile.id);
-  const scoutedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'scouted').map((tile) => tile.id);
-  const recordedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'recorded').map((tile) => tile.id);
-  const connectedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'route_connected').map((tile) => tile.id);
-  const gamePhase: GamePhase = state.isDead || !state.player.isAlive ? 'dead' : state.ending || state.player.hasReturned ? 'returned' : state.currentEncounterId ? 'encounter' : 'exploring';
-  const sourcePlayer = state.player ?? state.playerState;
-  const playerState: PlayerState = {
-    ...sourcePlayer,
-    isAlive: !state.isDead && sourcePlayer.health > 0,
-    hasReturned: Boolean(state.ending || sourcePlayer.hasReturned),
-    day: sourcePlayer.day ?? state.currentDay,
-    position: sourcePlayer.position ?? state.playerPosition,
-  };
+export function createGameLog(message: string, id = `log-${Date.now().toString(36)}`): GameLog {
+  return { id, message };
+}
 
-  return {
-    ...state,
-    seed: state.seed || state.mapSeed,
-    mapSeed: state.seed || state.mapSeed,
-    currentDay: playerState.day,
-    playerPosition: playerState.position,
-    player: playerState,
-    playerState,
-    inventory: state.inventory ?? state.items,
-    items: state.inventory ?? state.items,
-    log: state.log ?? state.lastLog,
-    lastLog: state.log ?? state.lastLog,
-    gamePhase,
-    day: playerState.day,
-    hp: playerState.health,
-    food: playerState.food,
-    bodyTemp: playerState.warmth,
-    sanity: playerState.sanity,
-    location: playerState.position,
-    observedTiles,
-    scoutedTiles,
-    recordedTiles,
-    connectedTiles,
-  };
+export function deriveGamePhase(state: Pick<GameState, 'player' | 'encounter' | 'run'>): GamePhase {
+  if (!state.player.isAlive) return 'dead';
+  if (state.run.ending || state.player.hasReturned) return 'returned';
+  if (state.encounter.currentId) return 'encounter';
+  return 'exploring';
+}
+
+export function withDerivedPhase(state: GameState): GameState {
+  const phase = deriveGamePhase(state);
+  return phase === state.phase ? state : { ...state, phase };
 }
 
 export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
   const normalizedSeed = seed.trim() || `mvp-${Date.now()}`;
-  const mapSize = 7;
-  const systemMap = generateSystemMap(normalizedSeed, mapSize);
-  const startTile = tileId(Math.floor(mapSize / 2), mapSize - 1);
-  const playerMap = createPlayerMap(systemMap, startTile);
-  const parchmentSystemMap = generateParchmentSystemMap(normalizedSeed);
-  const parchmentPlayerMap = createParchmentPlayerMap(parchmentSystemMap, startTile, mapSize);
-  const playerState: PlayerState = {
+  const size = 7;
+  const systemTiles = generateSystemMap(normalizedSeed, size);
+  const startTile = tileId(Math.floor(size / 2), size - 1);
+  const playerTiles = createPlayerMap(systemTiles, startTile);
+  const parchmentSystem = generateParchmentSystemMap(normalizedSeed);
+  const parchmentPlayer = createParchmentPlayerMap(parchmentSystem, startTile, size);
+  const player: PlayerState = {
     health: 100,
     maxHealth: 100,
     food: 6,
@@ -79,62 +53,48 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
     day: 1,
     position: startTile,
     campPosition: startTile,
-  };
-  const log = ['한니발의 야영지에서 정찰을 시작한다. 군대가 살아남을 길을 기록해야 한다.'];
-
-  return syncGameStateAliases({
-    runId: createRunId(normalizedSeed),
-    seed: normalizedSeed,
-    currentDay: 1,
-    maxDays: DEFAULT_MAX_DAYS,
-    playerPosition: startTile,
-    playerState,
-    inventory: ['charcoal_stub', 'torn_operation_map'],
-    log,
-    gamePhase: 'exploring',
-    mapSeed: normalizedSeed,
-    mapSize,
-    systemMap,
-    playerMap,
-    parchmentSystemMap,
-    parchmentPlayerMap,
-    player: playerState,
-    actionCount: 0,
-    currentEncounterId: 'START_001',
-    resolvedEncounterIds: [],
-    lastLog: log,
-    ending: null,
-    isDead: false,
-    deathReason: null,
-    flags: [],
-    items: ['charcoal_stub', 'torn_operation_map'],
-    hasConsumedPendant: false,
-    pendantTransformedInto: null,
     traits: [],
     statusEffects: [],
-    chainStates: [],
-    relationships: [],
-    markedTileTags: [],
+  };
+
+  return {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    phase: 'encounter',
+    run: {
+      id: createRunId(normalizedSeed),
+      seed: normalizedSeed,
+      maxDays: DEFAULT_MAX_DAYS,
+      actionCount: 0,
+      slot: 1,
+      ending: null,
+    },
+    player,
+    inventory: { itemIds: ['charcoal_stub', 'torn_operation_map'] },
+    map: {
+      size,
+      systemTiles,
+      playerTiles,
+      parchmentSystem,
+      parchmentPlayer,
+      mapTools: 6,
+      tutorialComplete: false,
+      unlocked: true,
+      markedTileTags: [],
+    },
+    encounter: {
+      currentId: 'START_001',
+      resolvedIds: [],
+      appliedChoiceIds: [],
+      hasConsumedPendant: false,
+      pendantTransformedInto: null,
+      chainStates: [],
+      relationships: [],
+    },
+    logs: [createGameLog('한니발의 야영지에서 정찰을 시작한다. 군대가 살아남을 길을 기록해야 한다.', 'log-start')],
+    flags: [],
+    deathReason: null,
     feedbackMessage: null,
-    day: 1,
-    slot: 1,
-    hp: 100,
-    maxHp: 100,
-    sanity: 72,
-    maxSanity: 100,
-    bodyTemp: 82,
-    maxBodyTemp: 100,
-    food: 6,
-    mapTools: 6,
-    location: startTile,
-    tutorialComplete: false,
-    mapUnlocked: true,
-    recordedTiles: [startTile],
-    observedTiles: [],
-    scoutedTiles: [],
-    connectedTiles: [startTile],
-    startLocation: startTile,
-  });
+  };
 }
 
 export function createInitialState(seed?: string): GameState {

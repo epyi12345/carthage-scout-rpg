@@ -15,24 +15,25 @@ interface PendingResult {
 
 export function GameScreen({ state, setState }: Props) {
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null);
-  const encounter = getEncounter(state.currentEncounterId);
+  const encounter = getEncounter(state.encounter.currentId);
 
   const handleChoiceSelect = (choice: EncounterChoice) => {
     if (!encounter) return;
-    const nextState = applyChoice(state, choice);
-    setState(nextState);
-    saveGame(nextState);
-    if (choice.resultText) {
-      setPendingResult({ encounterId: encounter.id, encounterTitle: encounter.title, text: choice.resultText });
-    } else {
+    const result = applyChoice(state, choice, encounter.id);
+    if (!result.applied) {
+      setState({ ...result.state, feedbackMessage: result.reason });
       setPendingResult(null);
+      return;
     }
+    setState(result.state);
+    saveGame(result.state);
+    setPendingResult(result.resultText ? { encounterId: encounter.id, encounterTitle: encounter.title, text: result.resultText } : null);
   };
 
   return (
     <InGamePlayScreen
       encounter={encounter}
-      missingEncounterId={state.currentEncounterId}
+      missingEncounterId={state.encounter.currentId}
       resultText={pendingResult?.text}
       resultEncounterId={pendingResult?.encounterId}
       resultEncounterTitle={pendingResult?.encounterTitle}

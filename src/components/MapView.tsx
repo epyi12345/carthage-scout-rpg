@@ -22,7 +22,7 @@ export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: 
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ x: number; y: number } | null>(null);
   const [mapLoadStatus, setMapLoadStatus] = useState('Map image loading');
   const [showFog, setShowFog] = useState(false);
-  const selectedPoint = state.parchmentSystemMap.points.find((point) => point.id === selectedTileId);
+  const selectedPoint = state.map.parchmentSystem.points.find((point) => point.id === selectedTileId);
 
   const handleMapClick = (event: { currentTarget: HTMLDivElement; clientX: number; clientY: number }) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -39,7 +39,7 @@ export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: 
           <p className="eyebrow">양피지 정찰 지도</p>
           <h1>알프스 지형도</h1>
         </div>
-        <span>{state.parchmentSystemMap.baseMapId}</span>
+        <span>{state.map.parchmentSystem.baseMapId}</span>
       </div>
       <p className="muted">검은 안개 아래에는 실제 시스템 지도가 숨겨져 있다. 현재 드러난 범위 안의 지점과 직접 남긴 표식만 믿을 수 있다.</p>
       <div className="map-runtime-debug" aria-live="polite">
@@ -51,22 +51,22 @@ export function MapView({ state, selectedTileId, onSelectTile, onPlaceMarker }: 
       <div className="parchment-map-frame">
         <MapHandle />
         <div className="parchment-map-surface" onClick={handleMapClick} role="button" tabIndex={0} aria-label="양피지 지도. 빈 지점을 눌러 수동 표식을 준비한다.">
-          <BaseMapLayer systemMap={state.parchmentSystemMap} onLoad={() => setMapLoadStatus('Map image loaded')} onError={() => setMapLoadStatus('Map image failed to load')} />
+          <BaseMapLayer systemMap={state.map.parchmentSystem} onLoad={() => setMapLoadStatus('Map image loaded')} onError={() => setMapLoadStatus('Map image failed to load')} />
           <VisiblePointLayer
-            points={state.parchmentSystemMap.points}
-            playerMap={state.parchmentPlayerMap}
+            points={state.map.parchmentSystem.points}
+            playerMap={state.map.parchmentPlayer}
             selectedPointId={selectedPoint?.id}
             onSelectPoint={(pointId) => {
               setSelectedCoordinates(null);
               onSelectTile?.(pointId);
             }}
           />
-          <PlayerMarkerLayer markers={state.parchmentPlayerMap.placedMarkers} />
-          {showFog && <FogOfWarLayer revealedAreas={state.parchmentPlayerMap.revealedAreas} />}
+          <PlayerMarkerLayer markers={state.map.parchmentPlayer.placedMarkers} />
+          {showFog && <FogOfWarLayer revealedAreas={state.map.parchmentPlayer.revealedAreas} />}
         </div>
       </div>
       <MapLegend />
-      <RecordPanel point={selectedPoint} playerMap={state.parchmentPlayerMap} selectedCoordinates={selectedCoordinates} onPlaceMarker={onPlaceMarker} />
+      <RecordPanel point={selectedPoint} playerMap={state.map.parchmentPlayer} selectedCoordinates={selectedCoordinates} onPlaceMarker={onPlaceMarker} />
     </section>
   );
 }

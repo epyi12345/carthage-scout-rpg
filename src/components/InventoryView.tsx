@@ -22,7 +22,7 @@ export function InventoryView({ state }: Props) {
           ))}
         </div>
       )}
-      <p className="note">펜던트 소모 상태: {state.hasConsumedPendant ? '소모됨' : '보존 중'}</p>
+      <p className="note">펜던트 소모 상태: {state.encounter.hasConsumedPendant ? '소모됨' : '보존 중'}</p>
     </section>
   );
 }

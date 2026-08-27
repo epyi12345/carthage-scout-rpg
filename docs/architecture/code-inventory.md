@@ -32,10 +32,10 @@ Categories:
 | Files | Reason retained |
 | --- | --- |
 | `src/screens/GameScreen.tsx` | Owns encounter choice application and result display; must be addressed with authoritative `GameState`. |
-| `src/game/gameState.ts`, `src/game/types.ts` | Current state/type authority despite known aliases; replacing these belongs to the next migration PR. |
+| `src/game/gameState.ts`, `src/game/types.ts` | Current state creation and compatibility type exports; schema v2 ownership is documented separately. |
 | `src/game/encounterEngine.ts`, `src/game/encounter.ts`, `src/game/endingEvaluator.ts` | Current game commands, catalog, and ending evaluation. |
 | `src/game/mapGenerator.ts` | Current 7×7/parchment state generator used by `GameState`; retain until the 30×30 integration is proven. |
-| `src/game/saveLoad.ts` | Current localStorage boundary; schema migration belongs to the state consolidation pass. |
+| `src/game/saveLoad.ts` | Current localStorage boundary with schema v2 validation and legacy migration. |
 | `src/game/inventory.ts`, `src/components/InventoryView.tsx`, `src/components/InventoryPopup.tsx` | Intentionally retained for the encounter-linked inventory rewrite. Do not delete in general cleanup. |
 | `src/game/traits.ts`, `src/content/items.json`, `src/content/traits.json` | Retained catalogs/helpers for the state and inventory follow-up even though the current screen does not import them. |
 
@@ -121,7 +121,7 @@ Runtime and build packages are exact versions in `package.json`; TypeScript is f
 
 This cleanup deliberately does **not**:
 
-- remove `GameState` aliases or change save schema;
+- connect the directional 30×30 prototype to authoritative `GameState.map`;
 - choose or regenerate a map model;
 - change encounter conditions/results;
 - implement item quantity, durability, or item-specific actions;

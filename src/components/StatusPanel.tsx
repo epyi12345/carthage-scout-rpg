@@ -14,18 +14,18 @@ function dangerClass(value: number, warnAt: number, dangerAt: number, inverse = 
 }
 
 export function StatusPanel({ state }: Props) {
-  const player = state.playerState ?? state.player;
-  const knownTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState !== 'unknown').length;
-  const recordedTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'recorded' || tile.playerKnowledgeState === 'route_connected').length;
-  const routeTiles = state.playerMap.filter((tile) => tile.playerKnowledgeState === 'route_connected').length;
-  const currentTile = state.playerMap.find((tile) => tile.id === player.position);
+  const player = state.player;
+  const knownTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState !== 'unknown').length;
+  const recordedTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState === 'recorded' || tile.playerKnowledgeState === 'route_connected').length;
+  const routeTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState === 'route_connected').length;
+  const currentTile = state.map.playerTiles.find((tile) => tile.id === player.position);
 
   return (
     <header className="status-panel" aria-label="현재 정찰 상태">
       <div className="status-topline">
-        <span>Day {state.currentDay}/{state.maxDays}</span>
+        <span>Day {state.player.day}/{state.run.maxDays}</span>
         <strong>{player.position}</strong>
-        <span>{state.gamePhase}</span>
+        <span>{state.phase}</span>
       </div>
       <div className="status-grid survival-grid">
         <div className={`stat ${dangerClass(player.health, 45, 25)}`}><span>체력</span><strong>{player.health}</strong></div>

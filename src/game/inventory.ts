@@ -10,9 +10,9 @@ export function getItem(itemId: string): Item | undefined {
 }
 
 export function getInventoryItems(state: GameState): Item[] {
-  return state.items.map(getItem).filter((item): item is Item => Boolean(item));
+  return state.inventory.itemIds.map(getItem).filter((item): item is Item => Boolean(item));
 }
 
 export function hasItem(state: GameState, itemId: string): boolean {
-  return state.items.includes(itemId);
+  return state.inventory.itemIds.includes(itemId);
 }
