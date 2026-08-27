@@ -1,4 +1,7 @@
-import { applyChoice, applyEffects } from '../src/game/encounterEngine';
+import { applyChoice, applyEffects, selectMapDirection } from '../src/game/encounterEngine';
+import { getEncounter } from '../src/game/encounter';
+import { generateMapTestState } from '../src/features/map/mapGenerator';
+import { getDirectionCandidates } from '../src/features/map/mapLogic';
 import { CURRENT_SCHEMA_VERSION, startNewGame } from '../src/game/gameState';
 import { deserializeGameState, loadGameFromStorage, SAVE_KEY, saveGameToStorage, serializeGameState, UnsupportedSaveVersionError } from '../src/game/saveLoad';
 import type { EncounterChoice, GameState } from '../src/game/types';
@@ -66,9 +69,7 @@ function legacyFixture(): Record<string, unknown> {
     playerState: { ...state.player, health: 65, day: 5 },
     inventory: ['authoritative-inventory'], items: ['stale-items-alias'],
     log: ['authoritative-log'], lastLog: ['stale-log-alias'],
-    flags: ['legacy-flag'], mapSize: state.map.size, systemMap: state.map.systemTiles,
-    playerMap: state.map.playerTiles, parchmentSystemMap: state.map.parchmentSystem,
-    parchmentPlayerMap: state.map.parchmentPlayer, currentEncounterId: 'START_001',
+    flags: ['legacy-flag'], mapSize: 7, currentEncounterId: 'START_001',
     resolvedEncounterIds: [], mapTools: 4, tutorialComplete: false, mapUnlocked: true,
   };
 }
@@ -99,4 +100,95 @@ run('future schema versions are rejected without deleting storage', () => {
   let rejected = false;
   try { deserializeGameState(raw); } catch (error) { rejected = error instanceof UnsupportedSaveVersionError; }
   assert(rejected, 'future version was not explicitly rejected');
+});
+
+run('the shared 30x30 generator is deterministic and its goal is grid-reachable', () => {
+  const first = generateMapTestState('shared-map-seed');
+  const second = generateMapTestState('shared-map-seed');
+  deepEqual(first, second, 'same seed generated different maps');
+  equal(first.size, 30, 'map size');
+  equal(first.tiles.length, 900, 'tile count');
+  const gridDistance = Math.abs(first.startPosition.x - first.goalPosition.x) + Math.abs(first.startPosition.y - first.goalPosition.y);
+  assert(gridDistance > 0 && gridDistance <= 58, 'goal is not reachable through the 30x30 grid');
+  assert(getDirectionCandidates(first).length >= 2, 'start position has no direction candidates');
+});
+
+function finishTutorial(seed: string): GameState {
+  const initial = startNewGame(seed);
+  const tutorialComplete = getEncounter('TUT_COMPLETE');
+  assert(tutorialComplete, 'TUT_COMPLETE missing');
+  const ready = { ...initial, encounter: { ...initial.encounter, currentId: tutorialComplete.id } };
+  const result = applyChoice(ready, tutorialComplete.choices[0], tutorialComplete.id);
+  assert(result.applied, 'tutorial completion was rejected');
+  return result.state;
+}
+
+run('tutorial completion and skip-equivalent transition preserve the authoritative map', () => {
+  const initial = startNewGame('tutorial-map');
+  assert(selectMapDirection(initial, getDirectionCandidates(initial.map)[0]).moved === false, 'movement was allowed during tutorial');
+  const beforeMap = initial.map;
+  const completed = finishTutorial('tutorial-map');
+  equal(completed.phase, 'direction', 'tutorial did not enter direction phase');
+  assert(completed.map.unlocked, 'tutorial did not unlock the map');
+  equal(completed.encounter.currentId, null, 'tutorial encounter was not cleared');
+  deepEqual(completed.map.currentPosition, beforeMap.currentPosition, 'tutorial reset map position');
+  deepEqual(completed.map.tiles, beforeMap.tiles, 'tutorial reset map tiles');
+  const skipped = applyEffects(initial, { setTutorialComplete: true, nextEncounterId: null });
+  equal(skipped.phase, 'direction', 'skip-equivalent did not enter direction phase');
+  deepEqual(skipped.map.currentPosition, initial.map.currentPosition, 'skip-equivalent reset position');
+});
+
+run('a valid first move is atomic, costs once, visits its destination, and opens MAP_ENTRY_001', () => {
+  const ready = finishTutorial('first-map-move');
+  const candidate = getDirectionCandidates(ready.map)[0];
+  const target = ready.map.specialNodes.find((node) => node.id === candidate.nodeId);
+  assert(target, 'candidate target missing');
+  const result = selectMapDirection(ready, candidate);
+  assert(result.moved, 'valid move was rejected');
+  deepEqual(result.state.map.currentPosition, target.center, 'position did not move to target');
+  equal(result.state.run.actionCount, ready.run.actionCount + 1, 'action cost applied incorrectly');
+  equal(result.state.player.warmth, ready.player.warmth - 2, 'warmth cost applied incorrectly');
+  equal(result.state.player.fatigue, ready.player.fatigue + 2, 'fatigue cost applied incorrectly');
+  equal(result.state.map.moveCount, 1, 'move count');
+  assert(result.state.map.tiles.find((tile) => tile.position.x === target.center.x && tile.position.y === target.center.y)?.visited, 'destination was not visited');
+  equal(result.state.encounter.currentId, 'MAP_ENTRY_001', 'map entry encounter did not open');
+  assert(!selectMapDirection(result.state, getDirectionCandidates(result.state.map)[0]).moved, 'movement was allowed during encounter');
+  const invalid = selectMapDirection(ready, { ...candidate, nodeId: 'missing-node' });
+  assert(!invalid.moved, 'invalid move succeeded');
+  assert(invalid.state === ready, 'invalid move changed state');
+});
+
+run('both MAP_ENTRY_001 choices resolve once and return to direction selection', () => {
+  const encounter = getEncounter('MAP_ENTRY_001');
+  assert(encounter, 'MAP_ENTRY_001 missing from active catalog');
+  for (const choice of encounter.choices) {
+    const ready = finishTutorial(`map-entry-${choice.id}`);
+    const moved = selectMapDirection(ready, getDirectionCandidates(ready.map)[0]);
+    assert(moved.moved, 'first move failed');
+    const resolved = applyChoice(moved.state, choice, encounter.id);
+    assert(resolved.applied, `${choice.id} did not resolve`);
+    equal(resolved.state.phase, 'direction', `${choice.id} did not return to direction selection`);
+    assert(resolved.state.flags.includes('map_entry_001_completed'), `${choice.id} did not set completion flag`);
+    equal(resolved.state.logs.filter((entry) => entry.message === choice.logMessage).length, 1, `${choice.id} log count`);
+    const duplicate = applyChoice(resolved.state, choice, encounter.id);
+    assert(!duplicate.applied, `${choice.id} applied twice`);
+    const secondMove = selectMapDirection(resolved.state, getDirectionCandidates(resolved.state.map)[0]);
+    assert(secondMove.moved, 'next direction was blocked');
+    equal(secondMove.state.encounter.currentId, null, 'MAP_ENTRY_001 occurred again');
+  }
+});
+
+run('map progression round-trips at tutorial, encounter, and resolved checkpoints', () => {
+  const checkpoints: GameState[] = [];
+  const tutorialDone = finishTutorial('map-save');
+  checkpoints.push(tutorialDone);
+  const moved = selectMapDirection(tutorialDone, getDirectionCandidates(tutorialDone.map)[0]);
+  assert(moved.moved, 'checkpoint move failed');
+  checkpoints.push(moved.state);
+  const encounter = getEncounter('MAP_ENTRY_001');
+  assert(encounter, 'MAP_ENTRY_001 missing');
+  const resolved = applyChoice(moved.state, encounter.choices[0], encounter.id);
+  assert(resolved.applied, 'checkpoint encounter failed');
+  checkpoints.push(resolved.state);
+  for (const checkpoint of checkpoints) deepEqual(deserializeGameState(serializeGameState(checkpoint)), checkpoint, 'map checkpoint did not round-trip');
 });

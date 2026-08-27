@@ -3,7 +3,7 @@ import type { InventoryState } from '../inventory/types';
 import type { GameMapState } from '../map/types';
 import type { RunState } from '../run/types';
 import type { PlayerState } from '../survival/types';
-export type GamePhase = 'exploring' | 'encounter' | 'returned' | 'dead';
+export type GamePhase = 'tutorial' | 'direction' | 'encounter' | 'returned' | 'dead';
 export interface GameLog { id: string; message: string }
 export type GameFlags = string[];
 export interface EndingScore { survival: number; mapAccuracy: number; dangerousRouteMarkings: number; passableRouteDiscovery: number; missingCriticalTiles: number; returnTiming: number; total: number }

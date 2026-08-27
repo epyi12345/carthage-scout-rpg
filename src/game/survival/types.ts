@@ -28,8 +28,6 @@ export interface PlayerState {
   isAlive: boolean;
   hasReturned: boolean;
   day: number;
-  position: string;
-  campPosition: string;
   traits: TraitId[];
   statusEffects: string[];
 }

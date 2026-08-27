@@ -20,7 +20,7 @@ export function MapTestPage() {
   const chooseCandidate = (candidate: DirectionCandidate) => setState((current) => selectDirectionCandidate(current, candidate));
   const returnToStart = () => setState((current) => ({
     ...cancelTravel(current),
-    playerPosition: current.discoveredPath[0],
+    currentPosition: current.startPosition,
     discoveredPath: [current.discoveredPath[0]],
   }));
 

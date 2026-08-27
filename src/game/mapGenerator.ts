@@ -1,4 +1,4 @@
-import type { Coordinate, Direction, GameState, MapTile, Passability, PlayerMapTile, RiskBand, TerrainType, TileState } from './types';
+import type { Coordinate, Direction, MapTile, Passability, PlayerMapTile, RiskBand, TerrainType } from './types';
 
 export const MVP_MAP_SIZE = 7;
 
@@ -221,54 +221,6 @@ export function createPlayerMap(systemMap: MapTile[], startTileId: string): Play
   });
 }
 
-export function getSystemTile(state: GameState, id: string): MapTile | undefined {
-  return state.map.systemTiles.find((tile) => tile.id === id);
-}
-
-export function getPlayerTile(state: GameState, id: string): PlayerMapTile | undefined {
-  return state.map.playerTiles.find((tile) => tile.id === id);
-}
-
-export function updatePlayerTile(state: GameState, id: string, patch: Partial<PlayerMapTile>): PlayerMapTile[] {
-  return state.map.playerTiles.map((tile) => tile.id === id ? { ...tile, ...patch } : tile);
-}
-
-export function revealTile(state: GameState, id: string, stateValue: TileState): PlayerMapTile[] {
-  const systemTile = getSystemTile(state, id);
-  if (!systemTile) return state.map.playerTiles;
-  const existing = getPlayerTile(state, id);
-  const nextState = rankTileState(stateValue) > rankTileState(existing?.playerKnowledgeState ?? existing?.state ?? 'unknown') ? stateValue : existing?.playerKnowledgeState ?? existing?.state ?? stateValue;
-  const observedHint = { terrainHint: terrainHint(systemTile.terrainType), riskBand: riskBand(systemTile.trueRiskLevel), passabilityHint: passabilityHint(systemTile.passability) };
-  const confirmed = stateValue === 'scouted' || stateValue === 'recorded' || stateValue === 'route_connected';
-  const recorded = stateValue === 'recorded' || stateValue === 'route_connected';
-  const notes = addNote(existing?.playerNotes ?? existing?.notes ?? [], recorded ? `기록: ${systemTile.terrainType}, 위험 ${systemTile.trueRiskLevel}, ${systemTile.passability}` : observedHint.terrainHint);
-
-  return updatePlayerTile(state, id, {
-    playerKnowledgeState: nextState,
-    observedHint,
-    confirmedTerrainType: confirmed ? systemTile.terrainType : existing?.confirmedTerrainType,
-    confirmedRiskLevel: confirmed ? systemTile.trueRiskLevel : existing?.confirmedRiskLevel,
-    confirmedPassability: confirmed ? systemTile.passability : existing?.confirmedPassability,
-    playerRecordedRisk: recorded ? systemTile.trueRiskLevel : existing?.playerRecordedRisk,
-    playerNotes: notes,
-    isRouteMarked: stateValue === 'route_connected' || existing?.isRouteMarked === true,
-    hasEncounterHint: systemTile.encounterId !== null,
-    state: nextState,
-    observedTerrain: confirmed ? systemTile.terrainType : existing?.observedTerrain,
-    observedRisk: confirmed ? systemTile.trueRiskLevel : existing?.observedRisk,
-    observedPassable: confirmed ? systemTile.passability !== 'blocked' : existing?.observedPassable,
-    notes,
-  });
-}
-
-function addNote(notes: string[], note: string): string[] {
-  return Array.from(new Set([...notes, note])).slice(-5);
-}
-
-export function rankTileState(state: TileState): number {
-  return { unknown: 0, observed: 1, scouted: 2, recorded: 3, route_connected: 4 }[state];
-}
-
 export function directionLabel(direction: Direction): string {
   return { north: '북쪽', south: '남쪽', east: '동쪽', west: '서쪽' }[direction];
 }
@@ -385,17 +337,6 @@ export function revealParchmentArea(systemMap: import('./types').SystemMap, play
 export function createParchmentPlayerMap(systemMap: import('./types').SystemMap, startTileId: string, size = MVP_MAP_SIZE): import('./types').PlayerMap {
   const start = tileToParchmentPosition(startTileId, size);
   return revealParchmentArea(systemMap, { revealedAreas: [], discoveredPointIds: [], visiblePointIds: [], placedMarkers: [], routeNotes: ['출발 지점 주변만 확실히 드러나 있다.'] }, start.x, start.y, 17, 'start');
-}
-
-export function syncParchmentVisibilityForPosition(state: GameState): GameState {
-  const position = tileToParchmentPosition(state.player.position, state.map.size);
-  return {
-    ...state,
-    map: {
-      ...state.map,
-      parchmentPlayer: revealParchmentArea(state.map.parchmentSystem, state.map.parchmentPlayer, position.x, position.y, 15, 'movement'),
-    },
-  };
 }
 
 export function placePlayerMarkerOnMap(playerMap: import('./types').PlayerMap, x: number, y: number, type: import('./types').PlayerMarkerType = 'return', note?: string): import('./types').PlayerMap {

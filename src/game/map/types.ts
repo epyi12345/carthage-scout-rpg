@@ -20,4 +20,32 @@ export interface MapTile extends Coordinate { id: string; terrainType: TerrainTy
 export interface PlayerMapTile extends Coordinate { id: string; playerKnowledgeState: TileState; playerRecordedRisk?: number; playerNotes: string[]; isRouteMarked: boolean; observedHint?: ObservedTileHint; confirmedTerrainType?: TerrainType; confirmedRiskLevel?: number; confirmedPassability?: Passability; hasEncounterHint?: boolean; state: TileState; observedTerrain?: TerrainType; observedRisk?: number; observedPassable?: boolean; notes: string[] }
 export interface RecordTileData { recordedRisk?: number; note?: string; markAsRoute?: boolean }
 export interface MarkedTileTag { tileId: string; state: TileMarkState }
-export interface GameMapState { size: number; systemTiles: MapTile[]; playerTiles: PlayerMapTile[]; parchmentSystem: SystemMap; parchmentPlayer: PlayerMap; mapTools: number; tutorialComplete: boolean; unlocked: boolean; markedTileTags: MarkedTileTag[] }
+export type GridPoint = { x: number; y: number };
+export type Bearing = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
+export type SpecialEncounterType = 'cave' | 'cliff' | 'village' | 'survivor' | 'wild_beast' | 'camp_trace' | 'high_ground' | 'tree_view' | 'roman_trace' | 'roman_camp' | 'ravine' | 'snowstorm_zone' | 'resource' | 'trap';
+export interface SpecialEncounterNode { id: string; type: SpecialEncounterType; center: GridPoint; footprintSize: 3; detectionRadius: number; activationRadius: number; region: string; title: string; hint: string; discovered: boolean; visited: boolean; recorded: boolean }
+export type TravelEncounterType = 'snow' | 'wild_beast' | 'falling_rocks' | 'lost_path' | 'supply_loss' | 'return_warning' | 'viewpoint' | 'camp_trace';
+export interface TravelEncounter { id: string; type: TravelEncounterType; title: string; body: string; canTriggerDirectionChoice: boolean }
+export interface DirectionCandidate { nodeId: string; bearing: Bearing; distance: number; label: string; hint: string }
+export interface ExplorationTile { id: string; position: GridPoint; visited: boolean; observed: boolean; scouted: boolean; recorded: boolean; routeMarked: boolean; recordedRisk?: number; notes: string[] }
+export interface GameMapState {
+  seed: string;
+  size: 30;
+  tiles: ExplorationTile[];
+  startPosition: GridPoint;
+  goalPosition: GridPoint;
+  currentPosition: GridPoint;
+  currentHeading?: Bearing;
+  currentTargetId?: string;
+  romanCampId: string;
+  specialNodes: SpecialEncounterNode[];
+  discoveredPath: GridPoint[];
+  visitedNodeIds: string[];
+  recordedNodeIds: string[];
+  travelQueue: TravelEncounter[];
+  travelStepIndex: number;
+  moveCount: number;
+  mapTools: number;
+  tutorialComplete: boolean;
+  unlocked: boolean;
+}

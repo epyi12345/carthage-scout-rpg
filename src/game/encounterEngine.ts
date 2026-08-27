@@ -1,7 +1,7 @@
 import { evaluateEnding } from './endingEvaluator';
-import { getNeighbors, getSystemTile, placePlayerMarkerOnMap, revealTile, syncParchmentVisibilityForPosition, updatePlayerTile } from './mapGenerator';
+import { arriveAtTarget, getDirectionCandidates } from '../features/map/mapLogic';
 import { clamp, createGameLog, startNewGame as createGameState, withDerivedPhase } from './gameState';
-import type { ChoiceApplyResult, Direction, EncounterChoice, EncounterConditions, EncounterEffects, GameState, RecordTileData, RelationshipScore, TileMarkState } from './types';
+import type { ChoiceApplyResult, Direction, DirectionCandidate, EncounterChoice, EncounterConditions, EncounterEffects, GameState, RecordTileData, RelationshipScore, TileMarkState } from './types';
 
 const addUnique = <T,>(existing: T[], additions: T[] = []): T[] => Array.from(new Set([...existing, ...additions]));
 const removeValues = (existing: string[], removals: string[] = []): string[] => existing.filter((value) => !removals.includes(value));
@@ -19,7 +19,7 @@ function upsertRelationship(existing: RelationshipScore[], target: string, delta
 }
 
 function finish(state: GameState): GameState {
-  return withDerivedPhase(syncParchmentVisibilityForPosition(state));
+  return withDerivedPhase(state);
 }
 
 export function calculateObservationReliability(state: GameState): number {
@@ -78,18 +78,18 @@ function normalizeEffects(effects: EncounterEffects = {}): EncounterEffects {
 }
 
 function markTile(state: GameState, tileId: string, tileState: TileMarkState): GameState {
-  const resolvedId = tileId === 'current' ? state.player.position : tileId;
-  const knowledge = tileState === 'connected' ? 'route_connected' : tileState;
-  const playerTiles = revealTile(state, resolvedId, knowledge);
+  const resolvedId = tileId === 'current' ? `${state.map.currentPosition.x},${state.map.currentPosition.y}` : tileId;
   return finish({
     ...state,
     map: {
       ...state.map,
-      playerTiles,
-      markedTileTags: [
-        ...state.map.markedTileTags.filter((tag) => !(tag.tileId === resolvedId && tag.state === tileState)),
-        { tileId: resolvedId, state: tileState },
-      ],
+      tiles: state.map.tiles.map((tile) => tile.id === resolvedId ? {
+        ...tile,
+        observed: true,
+        scouted: tile.scouted || tileState === 'scouted' || tileState === 'recorded' || tileState === 'connected' || tileState === 'route_connected',
+        recorded: tile.recorded || tileState === 'recorded' || tileState === 'connected' || tileState === 'route_connected',
+        routeMarked: tile.routeMarked || tileState === 'connected' || tileState === 'route_connected',
+      } : tile),
     },
   });
 }
@@ -101,7 +101,7 @@ export function areConditionsMet(state: GameState, conditions?: EncounterConditi
     && hasAll(state.flags, conditions.requiredFlags)
     && !hasAny(state.flags, conditions.forbiddenFlags)
     && hasAll(state.player.traits, conditions.requiredTraits)
-    && (!conditions.location || conditions.location === state.player.position);
+    && (!conditions.location || conditions.location === `${state.map.currentPosition.x},${state.map.currentPosition.y}`);
 }
 
 export function getConditionFailureMessage(conditions?: EncounterConditions): string {
@@ -151,23 +151,25 @@ export function applyEffects(state: GameState, rawEffects: EncounterEffects = {}
     next = { ...next, encounter: { ...next.encounter, chainStates } };
   }
   const location = effects.setLocation ?? effects.location;
-  if (location) next = { ...next, player: { ...next.player, position: location } };
+  if (location && /^\d+,\d+$/.test(location)) {
+    const [x, y] = location.split(',').map(Number);
+    next = { ...next, map: { ...next.map, currentPosition: { x, y } } };
+  }
   if (effects.isDead !== undefined) next = { ...next, player: { ...next.player, isAlive: !effects.isDead } };
   if (effects.deathReason !== undefined) next = { ...next, deathReason: effects.deathReason };
-  if (effects.setTutorialComplete ?? effects.tutorialComplete) next = { ...next, map: { ...next.map, tutorialComplete: true } };
+  if (effects.setTutorialComplete ?? effects.tutorialComplete) next = { ...next, map: { ...next.map, tutorialComplete: true, unlocked: true } };
   if ((effects.setMapUnlocked ?? effects.mapUnlocked) !== undefined) next = { ...next, map: { ...next.map, unlocked: Boolean(effects.setMapUnlocked ?? effects.mapUnlocked) } };
   if (effects.nextEncounterId !== undefined) next = { ...next, encounter: { ...next.encounter, currentId: effects.nextEncounterId } };
-  if (effects.recordCurrentTile) next = markTile(next, next.player.position, 'recorded');
+  if (effects.recordCurrentTile) next = markTile(next, 'current', 'recorded');
   if (effects.markTile) next = markTile(next, effects.markTile.tileId, effects.markTile.state);
-  if (effects.revealTile) next = { ...next, map: { ...next.map, playerTiles: revealTile(next, effects.revealTile.tileId === 'current' ? next.player.position : effects.revealTile.tileId, effects.revealTile.state) } };
+  if (effects.revealTile) next = markTile(next, effects.revealTile.tileId, effects.revealTile.state === 'unknown' ? 'observed' : effects.revealTile.state);
   for (const mutation of [effects.markRisk, effects.corruptMapInfo]) {
     if (!mutation) continue;
-    const tileId = mutation.tileId === 'current' ? next.player.position : mutation.tileId;
-    const tile = next.map.playerTiles.find((entry) => entry.id === tileId);
-    const note = 'note' in mutation ? mutation.note : undefined;
-    const risk = 'risk' in mutation ? mutation.risk : mutation.recordedRisk;
-    const notes = Array.from(new Set([...(tile?.playerNotes ?? []), ...(note ? [note] : [])]));
-    next = { ...next, map: { ...next.map, playerTiles: updatePlayerTile(next, tileId, { playerKnowledgeState: 'recorded', state: 'recorded', playerRecordedRisk: risk, playerNotes: notes, notes }) } };
+    const marked = markTile(next, mutation.tileId, 'recorded');
+    const tileId = mutation.tileId === 'current' ? `${marked.map.currentPosition.x},${marked.map.currentPosition.y}` : mutation.tileId;
+    const note = mutation.note;
+    const recordedRisk = 'risk' in mutation ? mutation.risk : mutation.recordedRisk;
+    next = { ...marked, map: { ...marked.map, tiles: marked.map.tiles.map((tile) => tile.id === tileId ? { ...tile, recordedRisk, notes: note ? Array.from(new Set([...tile.notes, note])) : tile.notes } : tile) } };
   }
   return checkSurvival(finish(next));
 }
@@ -198,47 +200,49 @@ export function applyChoice(state: GameState, choice: EncounterChoice, sourceEnc
   return { applied: true, state: next, resultText: choice.resultText ?? '' };
 }
 
+export type MapMoveResult = { moved: true; state: GameState } | { moved: false; state: GameState; reason: string };
+
+export function selectMapDirection(state: GameState, candidate: DirectionCandidate): MapMoveResult {
+  if (state.phase !== 'direction' || !state.map.tutorialComplete) return { moved: false, state, reason: '아직 실제 지도로 이동할 단계가 아니다.' };
+  if (state.encounter.currentId) return { moved: false, state, reason: '현재 인카운터를 먼저 해결해야 한다.' };
+  const valid = getDirectionCandidates(state.map).find((entry) => entry.nodeId === candidate.nodeId && entry.bearing === candidate.bearing);
+  if (!valid) return { moved: false, state, reason: '현재 위치에서 선택할 수 없는 방향이다.' };
+  const target = state.map.specialNodes.find((node) => node.id === valid.nodeId);
+  if (!target) return { moved: false, state, reason: '연결된 목적지를 찾을 수 없다.' };
+
+  const movedMap = arriveAtTarget({ ...state.map, currentTargetId: target.id, currentHeading: valid.bearing });
+  let next = advanceAction({ ...state, map: { ...movedMap, moveCount: state.map.moveCount + 1 } }, `${valid.bearing} 방향으로 이동했다.`);
+  if (state.map.moveCount === 0 && !state.flags.includes('map_entry_001_completed') && !state.encounter.resolvedIds.includes('MAP_ENTRY_001')) {
+    next = finish({ ...next, encounter: { ...next.encounter, currentId: 'MAP_ENTRY_001' } });
+  }
+  return { moved: true, state: next };
+}
+
+/** Legacy cardinal movement API; gameplay now uses selectMapDirection with a validated candidate. */
 export function movePlayer(state: GameState, direction: Direction): GameState {
-  const target = getNeighbors(state.player.position, state.map.size).find((neighbor) => neighbor.direction === direction);
-  if (!target) return { ...state, feedbackMessage: '그 방향으로는 이동할 수 없다.' };
-  const tile = getSystemTile(state, target.id);
-  if (!tile?.passable) return { ...state, feedbackMessage: '정찰병 혼자도 지나가기 어려운 지형이다.' };
-  let next = advanceAction({ ...state, player: { ...state.player, position: target.id } }, `${direction} 방향으로 이동했다.`);
-  next = finish({ ...next, map: { ...next.map, playerTiles: revealTile(next, target.id, 'scouted') } });
-  const encounterId = tile.encounterIds.find((id) => !next.encounter.resolvedIds.includes(id));
-  return encounterId ? finish({ ...next, encounter: { ...next.encounter, currentId: encounterId }, logs: appendLog(next, '이 지형에서 처리해야 할 사건을 만났다.') }) : next;
+  const bearing = { north: 'N', south: 'S', east: 'E', west: 'W' }[direction];
+  const candidate = getDirectionCandidates(state.map).find((entry) => entry.bearing === bearing);
+  if (!candidate) return state;
+  const result = selectMapDirection(state, candidate);
+  return result.moved ? result.state : state;
 }
 
 export function observeTile(state: GameState, tileId: string): GameState {
-  if (!getNeighbors(state.player.position, state.map.size).some((neighbor) => neighbor.id === tileId)) return { ...state, feedbackMessage: '인접한 타일만 관측할 수 있다.' };
-  let playerTiles = revealTile(state, tileId, 'observed');
-  const reliability = calculateObservationReliability(state);
-  const observed = playerTiles.find((tile) => tile.id === tileId);
-  if (reliability < 0.7 && observed?.observedHint) {
-    playerTiles = updatePlayerTile({ ...state, map: { ...state.map, playerTiles } }, tileId, {
-      observedHint: { ...observed.observedHint, riskBand: 'medium', passabilityHint: '추위와 피로 때문에 확신할 수 없다' },
-      playerNotes: [...observed.playerNotes, '관측 신뢰도 낮음'],
-      notes: [...observed.notes, '관측 신뢰도 낮음'],
-    });
-  }
-  return advanceAction({ ...state, map: { ...state.map, playerTiles } }, reliability < 0.7 ? `${tileId} 지형을 관측했지만 추위와 피로로 판단이 흐릿하다.` : `${tileId} 지형을 관측했다.`);
+  if (!state.map.tiles.some((tile) => tile.id === tileId)) return state;
+  return advanceAction(markTile(state, tileId, 'observed'), `${tileId} 지형을 관측했다.`);
 }
 
 export function recordTile(state: GameState, tileId: string, data: RecordTileData = {}): GameState {
-  const tile = state.map.playerTiles.find((entry) => entry.id === tileId);
-  if (!tile || tile.playerKnowledgeState === 'unknown') return { ...state, feedbackMessage: '먼저 관측하거나 정찰한 타일만 기록할 수 있다.' };
-  const playerTiles = tile.playerKnowledgeState === 'observed'
-    ? updatePlayerTile(state, tileId, { playerKnowledgeState: 'recorded', state: 'recorded', playerRecordedRisk: data.recordedRisk, playerNotes: [...tile.playerNotes, ...(data.note ? [data.note] : [])], notes: [...tile.notes, ...(data.note ? [data.note] : [])] })
-    : revealTile(state, tileId, data.markAsRoute ? 'route_connected' : 'recorded');
-  return advanceAction({ ...state, map: { ...state.map, playerTiles, mapTools: Math.max(0, state.map.mapTools - 1) } }, `${tileId} 타일을 군대용 지도에 기록했다.`);
+  const tile = state.map.tiles.find((entry) => entry.id === tileId);
+  if (!tile?.observed) return state;
+  const marked = markTile(state, tileId, data.markAsRoute ? 'route_connected' : 'recorded');
+  return advanceAction({ ...marked, map: { ...marked.map, mapTools: Math.max(0, marked.map.mapTools - 1) } }, `${tileId} 타일을 군대용 지도에 기록했다.`);
 }
 
 export function markRouteTile(state: GameState, tileId: string): GameState {
-  const tile = state.map.playerTiles.find((entry) => entry.id === tileId);
-  if (!tile || tile.playerKnowledgeState !== 'recorded') return { ...state, feedbackMessage: '기록된 타일만 경로 후보로 연결할 수 있다.' };
-  if (tile.confirmedPassability === undefined) return { ...state, feedbackMessage: '관측만 기록한 타일은 아직 경로 후보로 연결할 만큼 신뢰할 수 없다.' };
-  if (tile.confirmedPassability === 'blocked') return { ...state, feedbackMessage: '군대 경로로 연결하기에는 길이 끊겨 있다.' };
-  return advanceAction({ ...state, map: { ...state.map, playerTiles: revealTile(state, tileId, 'route_connected') } }, `${tileId} 타일을 한니발군 경로 후보로 연결했다.`);
+  const tile = state.map.tiles.find((entry) => entry.id === tileId);
+  if (!tile?.recorded) return state;
+  return advanceAction(markTile(state, tileId, 'route_connected'), `${tileId} 타일을 한니발군 경로 후보로 연결했다.`);
 }
 
 export function rest(state: GameState): GameState {
@@ -246,15 +250,12 @@ export function rest(state: GameState): GameState {
 }
 
 export function placePlayerMarker(state: GameState, x: number, y: number): GameState {
-  const parchmentPlayer = placePlayerMarkerOnMap(state.map.parchmentPlayer, x, y, 'return', '수동 귀환 표식');
-  return finish({ ...state, map: { ...state.map, parchmentPlayer }, logs: appendLog(state, `지도에 귀환 표식을 남겼다. (${Math.round(x)}, ${Math.round(y)})`) });
+  return finish({ ...state, logs: appendLog(state, `지도에 귀환 표식을 남겼다. (${Math.round(x)}, ${Math.round(y)})`) });
 }
 
 export function returnToCamp(state: GameState): GameState {
-  const current = getSystemTile(state, state.player.position) ?? { x: 0, y: 0 };
-  const camp = getSystemTile(state, state.player.campPosition) ?? { x: 3, y: 6 };
-  const distance = Math.abs(current.x - camp.x) + Math.abs(current.y - camp.y);
-  let returned = checkSurvival({ ...state, player: { ...state.player, position: state.player.campPosition, hasReturned: true, health: clamp(state.player.health - distance * 3, 0, state.player.maxHealth), warmth: clamp(state.player.warmth - distance * 4, 0, state.player.maxWarmth), fatigue: clamp(state.player.fatigue + distance * 5, 0, state.player.maxFatigue) }, encounter: { ...state.encounter, currentId: null }, logs: appendLog(state, '한니발의 야영지로 복귀해 지도를 제출했다.') });
+  const distance = Math.abs(state.map.currentPosition.x - state.map.startPosition.x) + Math.abs(state.map.currentPosition.y - state.map.startPosition.y);
+  let returned = checkSurvival({ ...state, map: { ...state.map, currentPosition: state.map.startPosition }, player: { ...state.player, hasReturned: true, health: clamp(state.player.health - distance * 3, 0, state.player.maxHealth), warmth: clamp(state.player.warmth - distance * 4, 0, state.player.maxWarmth), fatigue: clamp(state.player.fatigue + distance * 5, 0, state.player.maxFatigue) }, encounter: { ...state.encounter, currentId: null }, logs: appendLog(state, '한니발의 야영지로 복귀해 지도를 제출했다.') });
   returned = { ...returned, run: { ...returned.run, ending: evaluateEnding(returned) } };
   return finish(returned);
 }

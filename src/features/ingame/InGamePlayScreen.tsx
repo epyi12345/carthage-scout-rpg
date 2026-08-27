@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AchievementAlbumPopup } from '../../components/AchievementAlbumPopup';
-import type { Encounter, EncounterChoice } from '../../game/types';
+import type { DirectionCandidate, Encounter, EncounterChoice, GameMapState } from '../../game/types';
 import { MapPanel } from '../map/MapPanel';
-import { advanceTravel, cancelTravel, recordCurrentNode, selectDirectionCandidate } from '../map/mapLogic';
-import type { DirectionCandidate } from '../map/mapTypes';
-import { useMapRun } from '../map/useMapRun';
+import { getDirectionCandidates } from '../map/mapLogic';
 import { OptionsOverlay } from '../options/OptionsOverlay';
 import { getTextSpeedDelay, loadUiSettings, saveUiSettings } from '../options/uiSettings';
 import { useTypewriterText } from '../typing/useTypewriterText';
@@ -22,6 +20,9 @@ interface InGamePlayScreenProps {
   resultEncounterTitle?: string | null;
   onChoiceSelect?: (choice: EncounterChoice) => void;
   onContinueResult?: () => void;
+  mapState: GameMapState;
+  onSelectMapDirection: (candidate: DirectionCandidate) => void;
+  mapMovePending?: boolean;
 }
 
 function splitImagePlaceholder(body: string, fallbackPlaceholder?: string) {
@@ -133,12 +134,11 @@ function renderParagraphs(text: string) {
     });
 }
 
-export function InGamePlayScreen({ encounter, missingEncounterId, resultText, resultEncounterId, resultEncounterTitle, onChoiceSelect, onContinueResult }: InGamePlayScreenProps) {
+export function InGamePlayScreen({ encounter, missingEncounterId, resultText, resultEncounterId, resultEncounterTitle, onChoiceSelect, onContinueResult, mapState, onSelectMapDirection, mapMovePending = false }: InGamePlayScreenProps) {
   const [isAchievementPopupOpen, setIsAchievementPopupOpen] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [settings, setSettings] = useState(loadUiSettings);
-  const [mapSeed] = useState(() => `run-${Date.now()}`);
-  const { mapState, setMapState, candidates } = useMapRun(mapSeed);
+  const candidates = mapState.tutorialComplete && !encounter ? getDirectionCandidates(mapState) : [];
   const [mapRevealState, setMapRevealState] = useState<MapRevealState>('closed');
   const [revealedHeight, setRevealedHeight] = useState(0);
   const [mapGeometry, setMapGeometry] = useState<MapGeometry | null>(null);
@@ -266,7 +266,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [mapGeometry?.stageWidth, viewportSize.width, viewportSize.height]);
+  }, [mapGeometry?.stageWidth, mapState.tutorialComplete, viewportSize.width, viewportSize.height]);
 
   useEffect(() => {
     if (mapRevealStateRef.current !== 'open') return;
@@ -375,10 +375,6 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
     } catch {
       // Capture may already be released after pointercancel/lostpointercapture.
     }
-  };
-
-  const handleSelectMapCandidate = (candidate: DirectionCandidate) => {
-    setMapState((current) => selectDirectionCandidate(current, candidate));
   };
 
   return (
@@ -539,6 +535,19 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
                 </>
               )}
             </article>
+          ) : mapState.tutorialComplete ? (
+            <article className="ingame-encounter-content">
+              <p className="ingame-encounter-id">MAP_DIRECTION</p>
+              <h1 className="ingame-encounter-title">정찰 방향 선택</h1>
+              <p className="ingame-narrative-paragraph">현재 위치에서 확인할 방향을 선택하세요.</p>
+              <div className="ingame-choice-list" aria-label="이동 가능한 방향">
+                {candidates.map((candidate) => (
+                  <button type="button" className="ingame-choice-button" key={candidate.nodeId} disabled={mapMovePending} onClick={() => onSelectMapDirection(candidate)}>
+                    {candidate.label}
+                  </button>
+                ))}
+              </div>
+            </article>
           ) : (
             <article className="ingame-encounter-content">
               <p className="ingame-encounter-id">{missingEncounterId ?? 'NO_ENCOUNTER'}</p>
@@ -572,7 +581,7 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
         </div>
 
         <div className="ingame-map-interaction-overlay">
-        {footerHandleRect && (
+        {mapState.tutorialComplete && footerHandleRect && (
           <>
             <button
               type="button"
@@ -627,10 +636,10 @@ export function InGamePlayScreen({ encounter, missingEncounterId, resultText, re
                     candidates={candidates}
                     isDebug={false}
                     compact
-                    onSelectCandidate={handleSelectMapCandidate}
-                    onNextTravelEncounter={() => setMapState((current) => advanceTravel(current))}
-                    onRecordCurrentNode={() => setMapState((current) => recordCurrentNode(current))}
-                    onCancelTravel={() => setMapState((current) => cancelTravel(current))}
+                    onSelectCandidate={onSelectMapDirection}
+                    onNextTravelEncounter={() => undefined}
+                    onRecordCurrentNode={() => undefined}
+                    onCancelTravel={() => undefined}
                     onClose={closeMapReveal}
                   />
                 </div>

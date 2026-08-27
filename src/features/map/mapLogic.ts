@@ -28,11 +28,11 @@ export function getBearing(from: GridPoint, to: GridPoint): Bearing {
 }
 
 function toCandidate(state: MapTestState, node: SpecialEncounterNode): DirectionCandidate {
-  const bearing = getBearing(state.playerPosition, node.center);
+  const bearing = getBearing(state.currentPosition, node.center);
   return {
     nodeId: node.id,
     bearing,
-    distance: Number(distance(state.playerPosition, node.center).toFixed(1)),
+    distance: Number(distance(state.currentPosition, node.center).toFixed(1)),
     label: `${BEARING_LABELS[bearing]}, ${node.hint}`,
     hint: node.hint,
   };
@@ -107,7 +107,7 @@ export function createTravelQueue(seed: string, from: GridPoint, target: Special
 export function selectDirectionCandidate(state: MapTestState, candidate: DirectionCandidate): MapTestState {
   const target = state.specialNodes.find((node) => node.id === candidate.nodeId);
   if (!target) return state;
-  const travelQueue = createTravelQueue(state.seed, state.playerPosition, target, candidate.distance);
+  const travelQueue = createTravelQueue(state.seed, state.currentPosition, target, candidate.distance);
   const nextState = {
     ...state,
     currentHeading: candidate.bearing,
@@ -124,9 +124,10 @@ export function arriveAtTarget(state: MapTestState): MapTestState {
   const specialNodes = state.specialNodes.map((node) => node.id === target.id ? { ...node, discovered: true, visited: true } : node);
   return {
     ...state,
-    playerPosition: target.center,
+    currentPosition: target.center,
     specialNodes,
     discoveredPath: [...state.discoveredPath, target.center],
+    tiles: state.tiles.map((tile) => tile.position.x === target.center.x && tile.position.y === target.center.y ? { ...tile, visited: true, observed: true, scouted: true } : tile),
     visitedNodeIds: state.visitedNodeIds.includes(target.id) ? state.visitedNodeIds : [...state.visitedNodeIds, target.id],
     currentTargetId: undefined,
     travelQueue: [],
@@ -145,7 +146,7 @@ export function cancelTravel(state: MapTestState): MapTestState {
 }
 
 export function recordCurrentNode(state: MapTestState): MapTestState {
-  const currentNode = state.specialNodes.find((node) => node.visited && node.center.x === state.playerPosition.x && node.center.y === state.playerPosition.y);
+  const currentNode = state.specialNodes.find((node) => node.visited && node.center.x === state.currentPosition.x && node.center.y === state.currentPosition.y);
   if (!currentNode) return state;
   const specialNodes = state.specialNodes.map((node) => node.id === currentNode.id ? { ...node, recorded: true } : node);
   return {
@@ -156,5 +157,5 @@ export function recordCurrentNode(state: MapTestState): MapTestState {
 }
 
 export function getCurrentNode(state: MapTestState): SpecialEncounterNode | undefined {
-  return state.specialNodes.find((node) => node.visited && node.center.x === state.playerPosition.x && node.center.y === state.playerPosition.y);
+  return state.specialNodes.find((node) => node.visited && node.center.x === state.currentPosition.x && node.center.y === state.currentPosition.y);
 }

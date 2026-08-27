@@ -98,13 +98,13 @@ export function MapPanel({
         })}
 
         <span className="map-panel-start-marker" style={{ left: `${pointToPercent(state.discoveredPath[0]).x}%`, top: `${pointToPercent(state.discoveredPath[0]).y}%` }}>S</span>
-        <span className="map-panel-player-marker" style={{ left: `${pointToPercent(state.playerPosition).x}%`, top: `${pointToPercent(state.playerPosition).y}%` }}>P</span>
+        <span className="map-panel-player-marker" style={{ left: `${pointToPercent(state.currentPosition).x}%`, top: `${pointToPercent(state.currentPosition).y}%` }}>P</span>
       </section>
 
       {!compact && (<>
       <section className="map-panel-status" aria-label="현재 정찰 지도 상태">
         <div><span>Seed</span><strong>{state.seed}</strong></div>
-        <div><span>현재 위치</span><strong>{state.playerPosition.x}, {state.playerPosition.y}</strong></div>
+        <div><span>현재 위치</span><strong>{state.currentPosition.x}, {state.currentPosition.y}</strong></div>
         <div><span>진행 방향</span><strong>{state.currentHeading ?? '없음'}</strong></div>
         <div><span>현재 목표</span><strong>{state.currentTargetId ?? '없음'}</strong></div>
         <div><span>방문 노드</span><strong>{state.visitedNodeIds.length}</strong></div>
@@ -154,4 +154,3 @@ export function MapPanel({
     </section>
   );
 }
-

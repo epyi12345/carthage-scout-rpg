@@ -167,5 +167,29 @@
       { "id": "calm", "text": "먹이를 조금 주고 진정시킨다", "consequences": { "foodDelta": -1, "fatigueDelta": 2, "addItem": "pack_animal_bell", "addFlag": "rescued_pack_animal" }, "logMessage": "짐승의 방울과 흔적이 사람 길의 단서가 되었다." },
       { "id": "drive", "text": "쫓아 보내고 짐을 챙긴다", "consequences": { "foodDelta": 1, "moraleDelta": -4, "addFlag": "drove_off_pack_animal" }, "logMessage": "작은 식량은 얻었지만 마음이 무거워졌다." }
     ]
+  },
+  {
+    "id": "MAP_ENTRY_001",
+    "title": "표식 너머",
+    "category": "main_story",
+    "occurrenceType": "fixed",
+    "tone": "realistic",
+    "body": "훈련 구간의 마지막 표식이 등 뒤로 사라졌다. 바람은 눈 위의 흔적을 빠르게 지우고 있다. 이제부터는 선택한 길과 돌아갈 길을 스스로 남겨야 한다.",
+    "choices": [
+      {
+        "id": "observe_terrain",
+        "text": "주변 지형을 확인한다",
+        "effects": { "addFlag": "map_entry_001_completed", "nextEncounterId": null },
+        "logMessage": "바람을 견디며 능선과 골짜기의 윤곽을 살폈다. 지금 선 자리가 지도 위에 첫 번째 실제 경로로 남았다.",
+        "resultText": "바람을 견디며 능선과 골짜기의 윤곽을 살폈다. 지금 선 자리가 지도 위에 첫 번째 실제 경로로 남았다."
+      },
+      {
+        "id": "record_return",
+        "text": "지나온 방향을 기록한다",
+        "effects": { "addFlag": "map_entry_001_completed", "nextEncounterId": null },
+        "logMessage": "눈 위에 남은 흔적과 능선의 방향을 맞춰 기록했다. 뒤의 표식은 사라졌지만 돌아갈 길의 첫 단서는 남았다.",
+        "resultText": "눈 위에 남은 흔적과 능선의 방향을 맞춰 기록했다. 뒤의 표식은 사라졌지만 돌아갈 길의 첫 단서는 남았다."
+      }
+    ]
   }
 ]

@@ -6,10 +6,10 @@ import { MapLegend } from './MapLegend';
 import { PlayerMarkerLayer } from './PlayerMarkerLayer';
 import { RecordPanel } from './RecordPanel';
 import { VisiblePointLayer } from './VisiblePointLayer';
-import type { GameState } from '../game/types';
+import type { PlayerMap, SystemMap } from '../game/types';
 
 interface Props {
-  state: GameState;
+  state: { map: { parchmentSystem: SystemMap; parchmentPlayer: PlayerMap } };
   selectedTileId?: string;
   onSelectTile?: (tileId: string) => void;
   onObserveTile?: (tileId: string) => void;

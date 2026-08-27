@@ -1,7 +1,7 @@
-import { createParchmentPlayerMap, createPlayerMap, generateParchmentSystemMap, generateSystemMap, tileId } from './mapGenerator';
+import { generateMapTestState } from '../features/map/mapGenerator';
 import type { GameLog, GamePhase, GameState, PlayerState } from './types';
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 export const DEFAULT_MAX_DAYS = 21;
 
 export function clamp(value: number, min: number, max: number): number {
@@ -16,11 +16,11 @@ export function createGameLog(message: string, id = `log-${Date.now().toString(3
   return { id, message };
 }
 
-export function deriveGamePhase(state: Pick<GameState, 'player' | 'encounter' | 'run'>): GamePhase {
+export function deriveGamePhase(state: Pick<GameState, 'player' | 'encounter' | 'run' | 'map'>): GamePhase {
   if (!state.player.isAlive) return 'dead';
   if (state.run.ending || state.player.hasReturned) return 'returned';
   if (state.encounter.currentId) return 'encounter';
-  return 'exploring';
+  return state.map.tutorialComplete ? 'direction' : 'tutorial';
 }
 
 export function withDerivedPhase(state: GameState): GameState {
@@ -30,12 +30,7 @@ export function withDerivedPhase(state: GameState): GameState {
 
 export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
   const normalizedSeed = seed.trim() || `mvp-${Date.now()}`;
-  const size = 7;
-  const systemTiles = generateSystemMap(normalizedSeed, size);
-  const startTile = tileId(Math.floor(size / 2), size - 1);
-  const playerTiles = createPlayerMap(systemTiles, startTile);
-  const parchmentSystem = generateParchmentSystemMap(normalizedSeed);
-  const parchmentPlayer = createParchmentPlayerMap(parchmentSystem, startTile, size);
+  const map = generateMapTestState(normalizedSeed);
   const player: PlayerState = {
     health: 100,
     maxHealth: 100,
@@ -51,8 +46,6 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
     isAlive: true,
     hasReturned: false,
     day: 1,
-    position: startTile,
-    campPosition: startTile,
     traits: [],
     statusEffects: [],
   };
@@ -70,17 +63,7 @@ export function startNewGame(seed = `mvp-${Date.now()}`): GameState {
     },
     player,
     inventory: { itemIds: ['charcoal_stub', 'torn_operation_map'] },
-    map: {
-      size,
-      systemTiles,
-      playerTiles,
-      parchmentSystem,
-      parchmentPlayer,
-      mapTools: 6,
-      tutorialComplete: false,
-      unlocked: true,
-      markedTileTags: [],
-    },
+    map,
     encounter: {
       currentId: 'START_001',
       resolvedIds: [],

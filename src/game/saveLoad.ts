@@ -20,7 +20,6 @@ function legacyPlayer(raw: LegacySave, base: PlayerState): PlayerState {
   const source = isRecord(raw.playerState) ? raw.playerState : isRecord(raw.player) ? raw.player : {};
   const number = (key: string, fallback: number) => typeof source[key] === 'number' ? source[key] as number : fallback;
   const rootNumber = (key: string, fallback: number) => typeof raw[key] === 'number' ? raw[key] as number : fallback;
-  const position = typeof source.position === 'string' ? source.position : typeof raw.playerPosition === 'string' ? raw.playerPosition : typeof raw.location === 'string' ? raw.location : base.position;
   const health = number('health', rootNumber('hp', base.health));
   return {
     ...base,
@@ -38,26 +37,23 @@ function legacyPlayer(raw: LegacySave, base: PlayerState): PlayerState {
     isAlive: typeof source.isAlive === 'boolean' ? source.isAlive : raw.isDead !== true && health > 0,
     hasReturned: typeof source.hasReturned === 'boolean' ? source.hasReturned : Boolean(raw.ending),
     day: number('day', rootNumber('currentDay', rootNumber('day', base.day))),
-    position,
-    campPosition: typeof source.campPosition === 'string' ? source.campPosition : typeof raw.startLocation === 'string' ? raw.startLocation : base.campPosition,
     traits: strings(raw.traits) as PlayerState['traits'] ?? base.traits,
     statusEffects: strings(raw.statusEffects) ?? base.statusEffects,
   };
 }
 
 function migrateLegacySave(raw: LegacySave): GameState {
-  const seed = typeof raw.seed === 'string' ? raw.seed : typeof raw.mapSeed === 'string' ? raw.mapSeed : 'migrated-mvp';
+  const nestedRun = isRecord(raw.run) ? raw.run : {};
+  const seed = typeof nestedRun.seed === 'string' ? nestedRun.seed : typeof raw.seed === 'string' ? raw.seed : typeof raw.mapSeed === 'string' ? raw.mapSeed : 'migrated-mvp';
   const base = startNewGame(seed);
   const player = legacyPlayer(raw, base.player);
-  // Historical save loading made inventory authoritative over items, and log authoritative over lastLog.
-  const itemIds = strings(raw.inventory) ?? strings(raw.items) ?? base.inventory.itemIds;
-  const messages = strings(raw.log) ?? strings(raw.lastLog) ?? base.logs.map((entry) => entry.message);
-  const systemTiles = Array.isArray(raw.systemMap) ? raw.systemMap as GameState['map']['systemTiles'] : base.map.systemTiles;
-  const playerTiles = Array.isArray(raw.playerMap) ? raw.playerMap as GameState['map']['playerTiles'] : base.map.playerTiles;
-  const parchmentSystem = isRecord(raw.parchmentSystemMap) ? raw.parchmentSystemMap as unknown as GameState['map']['parchmentSystem'] : base.map.parchmentSystem;
-  const parchmentPlayer = isRecord(raw.parchmentPlayerMap) ? raw.parchmentPlayerMap as unknown as GameState['map']['parchmentPlayer'] : base.map.parchmentPlayer;
-  const ending = isRecord(raw.ending) ? raw.ending as unknown as GameState['run']['ending'] : null;
-  const currentId = typeof raw.currentEncounterId === 'string' || raw.currentEncounterId === null ? raw.currentEncounterId as string | null : base.encounter.currentId;
+  const itemIds = strings(raw.inventory) ?? (isRecord(raw.inventory) ? strings(raw.inventory.itemIds) : null) ?? strings(raw.items) ?? base.inventory.itemIds;
+  const messages = strings(raw.log) ?? strings(raw.lastLog) ?? (Array.isArray(raw.logs) ? raw.logs.map((entry) => isRecord(entry) && typeof entry.message === 'string' ? entry.message : '').filter(Boolean) : null) ?? base.logs.map((entry) => entry.message);
+  const nestedMap = isRecord(raw.map) ? raw.map : {};
+  const nestedEncounter = isRecord(raw.encounter) ? raw.encounter : {};
+  const currentId = typeof nestedEncounter.currentId === 'string' || nestedEncounter.currentId === null
+    ? nestedEncounter.currentId as string | null
+    : typeof raw.currentEncounterId === 'string' || raw.currentEncounterId === null ? raw.currentEncounterId as string | null : base.encounter.currentId;
 
   return withDerivedPhase({
     ...base,
@@ -69,33 +65,28 @@ function migrateLegacySave(raw: LegacySave): GameState {
     feedbackMessage: typeof raw.feedbackMessage === 'string' ? raw.feedbackMessage : null,
     run: {
       ...base.run,
-      id: typeof raw.runId === 'string' ? raw.runId : base.run.id,
+      id: typeof nestedRun.id === 'string' ? nestedRun.id : typeof raw.runId === 'string' ? raw.runId : base.run.id,
       seed,
-      maxDays: typeof raw.maxDays === 'number' ? raw.maxDays : base.run.maxDays,
-      actionCount: typeof raw.actionCount === 'number' ? raw.actionCount : base.run.actionCount,
-      slot: typeof raw.slot === 'number' ? raw.slot : base.run.slot,
-      ending,
+      maxDays: typeof nestedRun.maxDays === 'number' ? nestedRun.maxDays : typeof raw.maxDays === 'number' ? raw.maxDays : base.run.maxDays,
+      actionCount: typeof nestedRun.actionCount === 'number' ? nestedRun.actionCount : typeof raw.actionCount === 'number' ? raw.actionCount : base.run.actionCount,
+      slot: typeof nestedRun.slot === 'number' ? nestedRun.slot : typeof raw.slot === 'number' ? raw.slot : base.run.slot,
+      ending: isRecord(nestedRun.ending) ? nestedRun.ending as unknown as GameState['run']['ending'] : null,
     },
     map: {
       ...base.map,
-      size: typeof raw.mapSize === 'number' ? raw.mapSize : base.map.size,
-      systemTiles,
-      playerTiles,
-      parchmentSystem,
-      parchmentPlayer,
-      mapTools: typeof raw.mapTools === 'number' ? raw.mapTools : base.map.mapTools,
-      tutorialComplete: typeof raw.tutorialComplete === 'boolean' ? raw.tutorialComplete : base.map.tutorialComplete,
-      unlocked: typeof raw.mapUnlocked === 'boolean' ? raw.mapUnlocked : base.map.unlocked,
-      markedTileTags: Array.isArray(raw.markedTileTags) ? raw.markedTileTags as GameState['map']['markedTileTags'] : base.map.markedTileTags,
+      tutorialComplete: typeof nestedMap.tutorialComplete === 'boolean' ? nestedMap.tutorialComplete : typeof raw.tutorialComplete === 'boolean' ? raw.tutorialComplete : false,
+      unlocked: typeof nestedMap.unlocked === 'boolean' ? nestedMap.unlocked : typeof raw.mapUnlocked === 'boolean' ? raw.mapUnlocked : false,
+      mapTools: typeof nestedMap.mapTools === 'number' ? nestedMap.mapTools : typeof raw.mapTools === 'number' ? raw.mapTools : base.map.mapTools,
     },
     encounter: {
       ...base.encounter,
       currentId,
-      resolvedIds: strings(raw.resolvedEncounterIds) ?? base.encounter.resolvedIds,
-      hasConsumedPendant: raw.hasConsumedPendant === true,
-      pendantTransformedInto: typeof raw.pendantTransformedInto === 'string' ? raw.pendantTransformedInto : null,
-      chainStates: Array.isArray(raw.chainStates) ? raw.chainStates as GameState['encounter']['chainStates'] : [],
-      relationships: Array.isArray(raw.relationships) ? raw.relationships as GameState['encounter']['relationships'] : [],
+      resolvedIds: strings(nestedEncounter.resolvedIds) ?? strings(raw.resolvedEncounterIds) ?? [],
+      appliedChoiceIds: strings(nestedEncounter.appliedChoiceIds) ?? [],
+      hasConsumedPendant: nestedEncounter.hasConsumedPendant === true || raw.hasConsumedPendant === true,
+      pendantTransformedInto: typeof nestedEncounter.pendantTransformedInto === 'string' ? nestedEncounter.pendantTransformedInto : null,
+      chainStates: Array.isArray(nestedEncounter.chainStates) ? nestedEncounter.chainStates as GameState['encounter']['chainStates'] : [],
+      relationships: Array.isArray(nestedEncounter.relationships) ? nestedEncounter.relationships as GameState['encounter']['relationships'] : [],
     },
   });
 }
@@ -108,6 +99,9 @@ export function isGameState(value: unknown): value is GameState {
     && isRecord(value.inventory)
     && Array.isArray(value.inventory.itemIds)
     && isRecord(value.map)
+    && value.map.size === 30
+    && Array.isArray(value.map.tiles)
+    && isRecord(value.map.currentPosition)
     && isRecord(value.encounter)
     && Array.isArray(value.logs)
     && Array.isArray(value.flags);

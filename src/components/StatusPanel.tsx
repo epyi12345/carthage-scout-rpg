@@ -15,16 +15,16 @@ function dangerClass(value: number, warnAt: number, dangerAt: number, inverse = 
 
 export function StatusPanel({ state }: Props) {
   const player = state.player;
-  const knownTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState !== 'unknown').length;
-  const recordedTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState === 'recorded' || tile.playerKnowledgeState === 'route_connected').length;
-  const routeTiles = state.map.playerTiles.filter((tile) => tile.playerKnowledgeState === 'route_connected').length;
-  const currentTile = state.map.playerTiles.find((tile) => tile.id === player.position);
+  const knownTiles = state.map.tiles.filter((tile) => tile.observed || tile.visited).length;
+  const recordedTiles = state.map.tiles.filter((tile) => tile.recorded).length;
+  const routeTiles = state.map.tiles.filter((tile) => tile.routeMarked).length;
+  const currentTile = state.map.tiles.find((tile) => tile.position.x === state.map.currentPosition.x && tile.position.y === state.map.currentPosition.y);
 
   return (
     <header className="status-panel" aria-label="현재 정찰 상태">
       <div className="status-topline">
         <span>Day {state.player.day}/{state.run.maxDays}</span>
-        <strong>{player.position}</strong>
+        <strong>{state.map.currentPosition.x},{state.map.currentPosition.y}</strong>
         <span>{state.phase}</span>
       </div>
       <div className="status-grid survival-grid">
@@ -34,10 +34,10 @@ export function StatusPanel({ state }: Props) {
         <div className={`stat ${dangerClass(player.fatigue, 55, 78, true)}`}><span>피로</span><strong>{player.fatigue}</strong></div>
       </div>
       <div className="map-awareness-strip">
-        <span>확인 {knownTiles}/49</span>
+        <span>확인 {knownTiles}/900</span>
         <span>기록 {recordedTiles}</span>
         <span>경로 {routeTiles}</span>
-        <span>{currentTile?.playerKnowledgeState ?? 'unknown'}</span>
+        <span>{currentTile?.recorded ? 'recorded' : currentTile?.visited ? 'visited' : 'unknown'}</span>
       </div>
     </header>
   );

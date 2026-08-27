@@ -151,10 +151,19 @@ export function generateMapTestState(seed: string): MapTestState {
     specialNodes.push(placeNode(index + 2, plan.type, plan.region, specialNodes, playerPosition, rng));
   });
 
+  const tiles = Array.from({ length: MAP_SIZE * MAP_SIZE }, (_, index) => {
+    const position = { x: index % MAP_SIZE, y: Math.floor(index / MAP_SIZE) };
+    const isStart = position.x === playerPosition.x && position.y === playerPosition.y;
+    return { id: `${position.x},${position.y}`, position, visited: isStart, observed: isStart, scouted: isStart, recorded: false, routeMarked: false, notes: [] };
+  });
+
   return {
     seed: normalizedSeed,
     size: MAP_SIZE,
-    playerPosition,
+    tiles,
+    startPosition: playerPosition,
+    goalPosition: romanCamp.center,
+    currentPosition: playerPosition,
     romanCampId: romanCamp.id,
     specialNodes,
     discoveredPath: [playerPosition],
@@ -162,6 +171,10 @@ export function generateMapTestState(seed: string): MapTestState {
     recordedNodeIds: [],
     travelQueue: [],
     travelStepIndex: 0,
+    moveCount: 0,
+    mapTools: 6,
+    tutorialComplete: false,
+    unlocked: false,
   };
 }
 
